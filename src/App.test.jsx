@@ -90,6 +90,20 @@ describe('ChatClub classroom prototype', () => {
     expect(screen.getByText(/message text is not repeated here/i)).toBeInTheDocument();
   });
 
+  test('opens profile settings from the sidebar avatar', () => {
+    render(<App />);
+    openDemo();
+
+    fireEvent.change(screen.getByLabelText(/class code/i), {
+      target: { value: 'DEMO-10A' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /enter class demo/i }));
+    fireEvent.click(screen.getByRole('button', { name: /open profile for/i }));
+
+    expect(screen.getByRole('heading', { name: 'More' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Your profile' })).toBeInTheDocument();
+  });
+
   test('finds a person and opens their direct chat', () => {
     render(<App />);
     openDemo();

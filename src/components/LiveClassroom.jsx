@@ -506,7 +506,7 @@ function LiveClassroom({ membership, user }) {
         currentUser={currentUser}
         activeView={activeView}
         onSelectView={setActiveView}
-        onLeave={signOut}
+        onOpenProfile={() => setActiveView('profile')}
         notificationCount={notifications.length}
       />
       {activeView === 'chat' ? (
@@ -578,7 +578,7 @@ function LiveClassroom({ membership, user }) {
             setActiveView('chat');
           }}
         />
-      ) : activeView === 'more' ? (
+      ) : ['more', 'profile'].includes(activeView) ? (
         <MorePanel
           preferences={notificationPreferences}
           onChangePreferences={setNotificationPreferences}
@@ -590,6 +590,7 @@ function LiveClassroom({ membership, user }) {
             await updateProfile(profile);
             await loadData();
           }}
+          initialSection={activeView === 'profile' ? 'profile' : undefined}
         />
       ) : activeView === 'moderation' ? (
         <ModeratorPanel

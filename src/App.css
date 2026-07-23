@@ -956,46 +956,46 @@
 
 /* Teen-friendly conversation polish: bright, calm, and easy to scan. */
 :root {
-  --teen-page: #f8f7fc;
-  --teen-panel: #fff;
-  --teen-soft: #f1eff8;
+  --teen-page: #fff9f5;
+  --teen-panel: #fffefd;
+  --teen-soft: #f6f0fa;
   --teen-card: #fff;
-  --teen-text: #27243d;
-  --teen-muted: #6f6b82;
-  --teen-line: #e5e2ee;
-  --teen-purple: #6557e8;
-  --teen-purple-soft: #eeeaff;
-  --teen-mint: #dff7ef;
-  --teen-coral: #ffe5dc;
+  --teen-text: #332641;
+  --teen-muted: #766a80;
+  --teen-line: #eadfeb;
+  --teen-purple: #8759df;
+  --teen-purple-soft: #f1e8ff;
+  --teen-mint: #d9f7ed;
+  --teen-coral: #ffe1df;
 }
 
 html[data-theme='dark'] {
-  --teen-page: #171624;
-  --teen-panel: #201e30;
-  --teen-soft: #29263b;
-  --teen-card: #29263d;
-  --teen-text: #f7f5ff;
-  --teen-muted: #bbb6ce;
-  --teen-line: #403c54;
-  --teen-purple: #8c7cff;
-  --teen-purple-soft: #37305f;
-  --teen-mint: #203f39;
-  --teen-coral: #4a302f;
+  --teen-page: #241936;
+  --teen-panel: #2c2040;
+  --teen-soft: #392a4d;
+  --teen-card: #352747;
+  --teen-text: #fff8fd;
+  --teen-muted: #d0bfd5;
+  --teen-line: #594166;
+  --teen-purple: #ad7dff;
+  --teen-purple-soft: #4a3269;
+  --teen-mint: #24564e;
+  --teen-coral: #613b4a;
 }
 
 @media (prefers-color-scheme: dark) {
   html[data-theme='system'] {
-    --teen-page: #171624;
-    --teen-panel: #201e30;
-    --teen-soft: #29263b;
-    --teen-card: #29263d;
-    --teen-text: #f7f5ff;
-    --teen-muted: #bbb6ce;
-    --teen-line: #403c54;
-    --teen-purple: #8c7cff;
-    --teen-purple-soft: #37305f;
-    --teen-mint: #203f39;
-    --teen-coral: #4a302f;
+    --teen-page: #241936;
+    --teen-panel: #2c2040;
+    --teen-soft: #392a4d;
+    --teen-card: #352747;
+    --teen-text: #fff8fd;
+    --teen-muted: #d0bfd5;
+    --teen-line: #594166;
+    --teen-purple: #ad7dff;
+    --teen-purple-soft: #4a3269;
+    --teen-mint: #24564e;
+    --teen-coral: #613b4a;
   }
 }
 
@@ -1018,7 +1018,8 @@ html[data-theme='dark'] {
 .calls-panel,
 .notifications-panel {
   background:
-    radial-gradient(circle at 95% 3%, rgb(255 192 170 / 18%), transparent 15rem),
+    radial-gradient(circle at 94% 4%, rgb(255 145 167 / 17%), transparent 16rem),
+    radial-gradient(circle at 16% 88%, rgb(94 218 189 / 10%), transparent 20rem),
     var(--teen-page);
 }
 
@@ -1090,7 +1091,7 @@ html[data-theme='dark'] {
 
 .app-shell .message--own .message__bubble {
   color: #fff;
-  background: linear-gradient(135deg, #7565ed, #5578eb);
+  background: linear-gradient(135deg, #9b62e8, #e76f9d);
 }
 
 .app-shell .composer__row input {
@@ -1185,6 +1186,35 @@ html[data-theme='dark'] {
   align-content: start;
 }
 
+.more-panel > .eyebrow,
+.more-panel > h1,
+.more-panel > .content-panel__intro {
+  width: min(58rem, 100%);
+  max-width: 58rem;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: left;
+}
+
+.more-panel > .eyebrow {
+  color: #c66bd1;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+}
+
+.more-panel > h1 {
+  margin-top: 0.55rem;
+  margin-bottom: 0.25rem;
+  font-size: clamp(1.8rem, 4vw, 2.25rem);
+  line-height: 1.1;
+}
+
+.more-panel > .content-panel__intro {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 .more-links {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-bottom: 0.25rem;
@@ -1239,12 +1269,13 @@ html[data-theme='dark'] {
 .settings-tab--active {
   border-color: transparent;
   color: #fff;
-  background: linear-gradient(135deg, #7565ed, #5d72ee);
+  background: linear-gradient(135deg, #9c63e9, #e46f9e);
   box-shadow: 0 8px 20px rgb(95 78 219 / 20%);
 }
 
 .preference-card {
   min-height: 17rem;
+  padding: 1.5rem;
 }
 
 .preference-card label {
@@ -1257,6 +1288,134 @@ html[data-theme='dark'] {
   border-color: var(--teen-line);
   color: var(--teen-text);
   background: var(--teen-panel);
+}
+
+.privacy-card {
+  min-height: 0;
+}
+
+.privacy-card > div:first-child {
+  padding-bottom: 1.1rem;
+}
+
+.privacy-card h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.privacy-card p {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.privacy-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.privacy-summary > div {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto 1fr;
+  align-content: start;
+  justify-content: start;
+  gap: 0.15rem 0.55rem;
+  border: 1px solid var(--teen-line);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: var(--teen-soft);
+}
+
+.privacy-summary > div > span {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  grid-row: 1 / span 2;
+  place-items: center;
+  border-radius: 0.75rem;
+  color: #7d4cc7;
+  background: var(--teen-purple-soft);
+}
+
+.privacy-summary dt {
+  align-self: end;
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+.privacy-summary dd {
+  margin: 0;
+  text-align: left;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.account-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0 !important;
+}
+
+.account-actions .settings-action {
+  display: grid;
+  gap: 0.2rem;
+  min-height: 4.5rem;
+  align-content: center;
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.account-actions .settings-action > span {
+  font-size: 0.85rem;
+}
+
+.account-actions .settings-action small {
+  color: var(--teen-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.account-actions .settings-action--danger {
+  border-color: color-mix(in srgb, #ef7992 45%, var(--teen-line));
+  color: #c83e61;
+  background: color-mix(in srgb, var(--teen-coral) 72%, var(--teen-card));
+}
+
+.app-shell .app-rail {
+  background:
+    radial-gradient(circle at 20% 8%, rgb(158 110 255 / 30%), transparent 8rem),
+    linear-gradient(180deg, #35234f, #251c3b);
+}
+
+.app-shell .nav-button--active {
+  background: linear-gradient(135deg, rgb(168 104 244 / 68%), rgb(232 107 157 / 48%));
+  box-shadow: inset 3px 0 0 #73e2c2;
+}
+
+.app-shell .sidebar-profile {
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.app-shell .sidebar-profile:hover,
+.app-shell .sidebar-profile:focus-visible {
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 10%);
+  outline: 0;
+}
+
+.sidebar-profile__chevron {
+  color: #dfccef;
+  font-size: 1.25rem;
 }
 
 @media (pointer: coarse) {
@@ -1279,6 +1438,11 @@ html[data-theme='dark'] {
   .settings-tab {
     min-width: 7rem;
     padding-inline: 0.8rem;
+  }
+
+  .privacy-summary,
+  .account-actions {
+    grid-template-columns: 1fr;
   }
 }
 

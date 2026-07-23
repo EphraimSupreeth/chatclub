@@ -20,6 +20,7 @@ export default function MorePanel({
   onDeleteAccount,
   currentUser,
   onUpdateProfile,
+  initialSection,
 }) {
   const [password, setPassword] = useState('');
   const [deleteStatus, setDeleteStatus] = useState('');
@@ -29,13 +30,17 @@ export default function MorePanel({
   const [profileStatus, setProfileStatus] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [activeSettings, setActiveSettings] = useState(
-    currentUser && onUpdateProfile ? 'profile' : 'notifications',
+    initialSection || (currentUser && onUpdateProfile ? 'profile' : 'notifications'),
   );
 
   useEffect(() => {
     setDisplayName(currentUser?.name ?? '');
     setAvatarTone(currentUser?.avatarTone ?? 'blue');
   }, [currentUser?.avatarTone, currentUser?.name]);
+
+  useEffect(() => {
+    if (initialSection) setActiveSettings(initialSection);
+  }, [initialSection]);
 
   async function changeDesktopNotifications(enabled) {
     if (enabled && 'Notification' in window) {
@@ -258,13 +263,15 @@ export default function MorePanel({
             <p>Control your session and understand what ChatClub keeps.</p>
           </div>
           <dl className="privacy-summary">
-            <div><dt>Messages</dt><dd>Kept for up to 180 days</dd></div>
-            <div><dt>Calls</dt><dd>Call details only; audio and video are not recorded</dd></div>
-            <div><dt>Visibility</dt><dd>Limited to authorized classroom participants</dd></div>
+            <div><span aria-hidden="true">◷</span><dt>Messages</dt><dd>Kept for up to 180 days</dd></div>
+            <div><span aria-hidden="true">⌁</span><dt>Calls</dt><dd>Audio and video aren’t recorded</dd></div>
+            <div><span aria-hidden="true">◇</span><dt>Private</dt><dd>Only your classroom can enter</dd></div>
           </dl>
-          <button className="settings-action" type="button" onClick={onSignOut}>
-            Sign out on all devices
-          </button>
+          <div className="account-actions">
+            <button className="settings-action" type="button" onClick={onSignOut}>
+              <span>Sign out</span>
+              <small>Sign out of ChatClub on every device</small>
+            </button>
           <Dialog.Root onOpenChange={(open) => {
             if (!open) {
               setPassword('');
@@ -273,7 +280,8 @@ export default function MorePanel({
           }}>
             <Dialog.Trigger asChild>
               <button className="settings-action settings-action--danger" type="button">
-                Delete account
+                <span>Delete account</span>
+                <small>Permanently remove your ChatClub account</small>
               </button>
             </Dialog.Trigger>
             <Dialog.Portal>
@@ -318,6 +326,7 @@ export default function MorePanel({
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
+          </div>
         </section>
       )}
     </section>

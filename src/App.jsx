@@ -50,7 +50,7 @@ function DemoApp() {
         currentUser={currentUser}
         activeView={activeView}
         onSelectView={setActiveView}
-        onLeave={() => setHasEntered(false)}
+        onOpenProfile={() => setActiveView('profile')}
       />
       {activeView === 'chat' ? (
         <ChatPanel
@@ -79,11 +79,14 @@ function DemoApp() {
         />
       ) : activeView === 'notifications' ? (
         <NotificationsPanel notifications={[]} onOpen={() => {}} />
-      ) : activeView === 'more' ? (
+      ) : ['more', 'profile'].includes(activeView) ? (
         <MorePanel
           preferences={notificationPreferences}
           onChangePreferences={setNotificationPreferences}
           onNavigate={setActiveView}
+          initialSection={activeView === 'profile' ? 'profile' : undefined}
+          currentUser={currentUser}
+          onUpdateProfile={async () => {}}
         />
       ) : (
         <CommunityPanel view={activeView} classroom={classroom} />

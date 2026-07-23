@@ -31,7 +31,7 @@ function ClassroomSidebar({
   currentUser,
   activeView,
   onSelectView,
-  onLeave,
+  onOpenProfile,
   notificationCount = 0,
 }) {
   const navigation =
@@ -55,7 +55,7 @@ function ClassroomSidebar({
             <button
               className={
                 activeView === item.id ||
-                (item.id === 'more' && ['announcements', 'safety'].includes(activeView))
+                (item.id === 'more' && ['announcements', 'safety', 'profile'].includes(activeView))
                   ? 'nav-button nav-button--active'
                   : 'nav-button'
               }
@@ -75,7 +75,13 @@ function ClassroomSidebar({
           ))}
         </nav>
       </div>
-      <div className="sidebar-profile">
+      <button
+        className="sidebar-profile"
+        type="button"
+        onClick={onOpenProfile}
+        aria-label={`Open profile for ${currentUser.name}`}
+        title="Profile and settings"
+      >
         <Avatar
           initials={currentUser.initials}
           tone={currentUser.avatarTone || 'mint'}
@@ -85,10 +91,8 @@ function ClassroomSidebar({
           <strong>{currentUser.name}</strong>
           <small>{currentUser.role}</small>
         </span>
-        <button type="button" onClick={onLeave} aria-label="Sign out" title="Sign out">
-          ↗
-        </button>
-      </div>
+        <span className="sidebar-profile__chevron" aria-hidden="true">›</span>
+      </button>
     </aside>
   );
 }
