@@ -303,7 +303,7 @@ function ChatPanel({
                         </button>
                       ))}
                       <details className="reaction-picker">
-                        <summary aria-label="Add reaction">＋</summary>
+                        <summary aria-label="Add reaction">☺</summary>
                         <div>
                           {['👍', '❤️', '😂', '😮', '😢', '👏'].map((emoji) => (
                             <button

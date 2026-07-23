@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 
+function CallIcon({ type }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d={type === 'audio'
+        ? 'M7 4l3 4-2 2c1.5 3 3 4.5 6 6l2-2 4 3-1 3c-.4 1.1-1.5 1.7-2.7 1.4C9.2 19.5 4.5 14.8 2.6 7.7 2.3 6.5 2.9 5.4 4 5z'
+        : 'M4 6.5A2.5 2.5 0 0 1 6.5 4h8A2.5 2.5 0 0 1 17 6.5v11A2.5 2.5 0 0 1 14.5 20h-8A2.5 2.5 0 0 1 4 17.5z M17 9l4-2v10l-4-2z'}
+      />
+    </svg>
+  );
+}
+
 function Video({ stream, muted, label }) {
   const ref = useRef(null);
 
@@ -163,7 +174,7 @@ export default function CallExperience({ peerName, call, canCall }) {
           disabled={!canCall || call.status !== 'idle'}
           aria-label={`Start an audio call with ${peerName}`}
         >
-          Audio
+          <CallIcon type="audio" />
         </button>
         <button
           className="call-button"
@@ -172,7 +183,7 @@ export default function CallExperience({ peerName, call, canCall }) {
           disabled={!canCall || call.status !== 'idle'}
           aria-label={`Start a video call with ${peerName}`}
         >
-          Video
+          <CallIcon type="video" />
         </button>
       </div>
 

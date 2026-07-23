@@ -559,6 +559,12 @@
   box-shadow: 0 6px 22px rgb(32 48 63 / 8%);
 }
 
+.conversation-card--updates {
+  border-color: transparent !important;
+  color: var(--teen-text) !important;
+  background: color-mix(in srgb, var(--teen-purple-soft) 72%, var(--teen-card)) !important;
+}
+
 .conversation-card__copy {
   display: grid;
   gap: 0.18rem;
@@ -945,6 +951,334 @@
 
   .lobby-preview {
     min-height: 13rem;
+  }
+}
+
+/* Teen-friendly conversation polish: bright, calm, and easy to scan. */
+:root {
+  --teen-page: #f8f7fc;
+  --teen-panel: #fff;
+  --teen-soft: #f1eff8;
+  --teen-card: #fff;
+  --teen-text: #27243d;
+  --teen-muted: #6f6b82;
+  --teen-line: #e5e2ee;
+  --teen-purple: #6557e8;
+  --teen-purple-soft: #eeeaff;
+  --teen-mint: #dff7ef;
+  --teen-coral: #ffe5dc;
+}
+
+html[data-theme='dark'] {
+  --teen-page: #171624;
+  --teen-panel: #201e30;
+  --teen-soft: #29263b;
+  --teen-card: #29263d;
+  --teen-text: #f7f5ff;
+  --teen-muted: #bbb6ce;
+  --teen-line: #403c54;
+  --teen-purple: #8c7cff;
+  --teen-purple-soft: #37305f;
+  --teen-mint: #203f39;
+  --teen-coral: #4a302f;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'] {
+    --teen-page: #171624;
+    --teen-panel: #201e30;
+    --teen-soft: #29263b;
+    --teen-card: #29263d;
+    --teen-text: #f7f5ff;
+    --teen-muted: #bbb6ce;
+    --teen-line: #403c54;
+    --teen-purple: #8c7cff;
+    --teen-purple-soft: #37305f;
+    --teen-mint: #203f39;
+    --teen-coral: #4a302f;
+  }
+}
+
+.app-shell,
+.app-shell .chat-layout,
+.app-shell .conversation-list,
+.app-shell .message-panel,
+.content-panel,
+.more-panel,
+.people-panel,
+.calls-panel,
+.notifications-panel {
+  color: var(--teen-text);
+}
+
+.app-shell .conversation-list,
+.content-panel,
+.more-panel,
+.people-panel,
+.calls-panel,
+.notifications-panel {
+  background:
+    radial-gradient(circle at 95% 3%, rgb(255 192 170 / 18%), transparent 15rem),
+    var(--teen-page);
+}
+
+.app-shell .message-panel {
+  background:
+    radial-gradient(circle at 92% 5%, rgb(143 221 201 / 13%), transparent 18rem),
+    radial-gradient(circle at 12% 82%, rgb(142 124 255 / 8%), transparent 20rem),
+    var(--teen-panel);
+}
+
+.app-shell .message-header,
+.app-shell .composer {
+  border-color: var(--teen-line);
+  background: color-mix(in srgb, var(--teen-panel) 94%, transparent);
+}
+
+.app-shell .message-header h2,
+.app-shell .conversation-list__header h1,
+.conversation-card strong,
+.message__meta strong,
+.content-panel h1,
+.preference-card h2,
+.privacy-summary dt,
+.person-card__identity h2,
+.notification-row {
+  color: var(--teen-text);
+}
+
+.app-shell .message-header p,
+.app-shell .conversation-list__header p,
+.conversation-card small,
+.message__meta,
+.composer > small,
+.content-panel__intro,
+.preference-card p,
+.preference-card small,
+.privacy-summary dd,
+.notification-row small,
+.notification-row time {
+  color: var(--teen-muted);
+}
+
+.conversation-card {
+  border-color: transparent;
+  border-radius: 1.15rem;
+  color: var(--teen-text);
+  background: var(--teen-card);
+}
+
+.conversation-card:nth-child(3n + 1) {
+  background: color-mix(in srgb, var(--teen-purple-soft) 58%, var(--teen-card));
+}
+
+.conversation-card:nth-child(3n + 2) {
+  background: color-mix(in srgb, var(--teen-mint) 45%, var(--teen-card));
+}
+
+.conversation-card--active {
+  border-color: color-mix(in srgb, var(--teen-purple) 38%, transparent);
+  background: var(--teen-purple-soft) !important;
+  box-shadow: 0 10px 24px rgb(58 47 127 / 9%);
+}
+
+.app-shell .message__bubble {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-soft);
+}
+
+.app-shell .message--own .message__bubble {
+  color: #fff;
+  background: linear-gradient(135deg, #7565ed, #5578eb);
+}
+
+.app-shell .composer__row input {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-soft);
+}
+
+.app-shell .composer__row input::placeholder {
+  color: var(--teen-muted);
+}
+
+.conversation-call-actions {
+  gap: 0.5rem;
+}
+
+.conversation-call-actions .call-button {
+  display: grid;
+  width: 2.65rem;
+  min-width: 2.65rem;
+  height: 2.65rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  color: #5145d5;
+  background: var(--teen-purple-soft);
+  box-shadow: none;
+}
+
+.conversation-call-actions .call-button:hover:not(:disabled) {
+  color: #fff;
+  background: var(--teen-purple);
+  transform: translateY(-1px);
+}
+
+.conversation-call-actions .call-button svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.reaction-picker summary {
+  opacity: 0;
+  color: var(--teen-muted);
+  background: var(--teen-card);
+  transition: opacity 120ms ease, background 120ms ease;
+}
+
+.message:hover .reaction-picker summary,
+.reaction-picker[open] summary,
+.reaction-picker summary:focus-visible {
+  opacity: 1;
+}
+
+.reaction-chip {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-card);
+}
+
+.reaction-picker > div {
+  border-color: var(--teen-line);
+  background: var(--teen-card);
+}
+
+.reaction-picker button,
+.message__action,
+.date-divider {
+  color: var(--teen-muted);
+}
+
+.reaction-picker button:hover {
+  background: var(--teen-purple-soft);
+}
+
+.reaction-chip--mine {
+  border-color: var(--teen-purple);
+  background: var(--teen-purple-soft);
+}
+
+.classroom-reminder {
+  color: #6b5422;
+  background: #fff5cf;
+}
+
+.more-panel {
+  align-content: start;
+}
+
+.more-links {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 0.25rem;
+}
+
+.more-links > button,
+.preference-card,
+.notification-row,
+.person-card {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-card);
+  box-shadow: 0 10px 26px rgb(42 37 78 / 5%);
+}
+
+.more-links > button:first-child > span:first-child {
+  color: #5145d5;
+  background: var(--teen-purple-soft);
+}
+
+.more-links > button:nth-child(2) > span:first-child {
+  color: #18755e;
+  background: var(--teen-mint);
+}
+
+.settings-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0.25rem 0 0.8rem;
+}
+
+.settings-tab {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--teen-line);
+  border-radius: 1rem;
+  color: var(--teen-muted);
+  background: var(--teen-card);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+}
+
+.settings-tab > span {
+  font-size: 1.05rem;
+}
+
+.settings-tab--active {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(135deg, #7565ed, #5d72ee);
+  box-shadow: 0 8px 20px rgb(95 78 219 / 20%);
+}
+
+.preference-card {
+  min-height: 17rem;
+}
+
+.preference-card label {
+  border-color: var(--teen-line);
+}
+
+.preference-card select,
+.profile-settings input[type='text'],
+.settings-action {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-panel);
+}
+
+@media (pointer: coarse) {
+  .reaction-picker summary {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 680px) {
+  .more-links {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-tabs {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+  }
+
+  .settings-tab {
+    min-width: 7rem;
+    padding-inline: 0.8rem;
   }
 }
 

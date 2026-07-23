@@ -28,6 +28,9 @@ export default function MorePanel({
   const [avatarTone, setAvatarTone] = useState(currentUser?.avatarTone ?? 'blue');
   const [profileStatus, setProfileStatus] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [activeSettings, setActiveSettings] = useState(
+    currentUser && onUpdateProfile ? 'profile' : 'notifications',
+  );
 
   useEffect(() => {
     setDisplayName(currentUser?.name ?? '');
@@ -51,7 +54,7 @@ export default function MorePanel({
       <span className="eyebrow">ChatClub</span>
       <h1 id="more-title">More</h1>
       <p className="content-panel__intro">
-        Updates, safety and preferences for this device.
+        Make ChatClub feel right for you.
       </p>
 
       <div className="more-links">
@@ -67,6 +70,42 @@ export default function MorePanel({
         </button>
       </div>
 
+      <nav className="settings-tabs" aria-label="Settings categories">
+        {currentUser && onUpdateProfile && (
+          <button
+            type="button"
+            className={activeSettings === 'profile' ? 'settings-tab settings-tab--active' : 'settings-tab'}
+            onClick={() => setActiveSettings('profile')}
+          >
+            <span aria-hidden="true">☺</span> Profile
+          </button>
+        )}
+        <button
+          type="button"
+          className={activeSettings === 'notifications' ? 'settings-tab settings-tab--active' : 'settings-tab'}
+          onClick={() => setActiveSettings('notifications')}
+        >
+          <span aria-hidden="true">♬</span> Alerts
+        </button>
+        <button
+          type="button"
+          className={activeSettings === 'appearance' ? 'settings-tab settings-tab--active' : 'settings-tab'}
+          onClick={() => setActiveSettings('appearance')}
+        >
+          <span aria-hidden="true">✦</span> Look
+        </button>
+        {onSignOut && onDeleteAccount && (
+          <button
+            type="button"
+            className={activeSettings === 'privacy' ? 'settings-tab settings-tab--active' : 'settings-tab'}
+            onClick={() => setActiveSettings('privacy')}
+          >
+            <span aria-hidden="true">⌾</span> Account
+          </button>
+        )}
+      </nav>
+
+      {activeSettings === 'notifications' && (
       <section className="preference-card" aria-labelledby="preferences-title">
         <div>
           <h2 id="preferences-title">Call alerts</h2>
@@ -93,8 +132,9 @@ export default function MorePanel({
           />
         </label>
       </section>
+      )}
 
-      {currentUser && onUpdateProfile && (
+      {activeSettings === 'profile' && currentUser && onUpdateProfile && (
         <section className="preference-card profile-settings" aria-labelledby="profile-title">
           <div>
             <h2 id="profile-title">Your profile</h2>
@@ -163,6 +203,7 @@ export default function MorePanel({
         </section>
       )}
 
+      {activeSettings === 'appearance' && (
       <section className="preference-card appearance-settings" aria-labelledby="appearance-title">
         <div>
           <h2 id="appearance-title">Appearance</h2>
@@ -208,8 +249,9 @@ export default function MorePanel({
           />
         </label>
       </section>
+      )}
 
-      {onSignOut && onDeleteAccount && (
+      {activeSettings === 'privacy' && onSignOut && onDeleteAccount && (
         <section className="preference-card privacy-card" aria-labelledby="privacy-title">
           <div>
             <h2 id="privacy-title">Privacy and account</h2>
