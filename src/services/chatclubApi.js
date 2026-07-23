@@ -256,3 +256,66 @@ export function subscribeToClassroom(classroomId, onChange) {
 
   return () => client.removeChannel(channel);
 }
+
+function directTopic(classroomId, firstUserId, secondUserId) {
+  const participants = [firstUserId, secondUserId].sort();
+  return `direct:${classroomId}:${participants[0]}:${participants[1]}`;
+}
+
+export function connectDirectConversation({
+  classroomId,
+  currentUserId,
+  peerUserId,
+  onBroadcast,
+  onPresence,
+  onStatus,
+}) {
+  const client = requireClient();
+  const channel = client.channel(
+    directTopic(classroomId, currentUserId, peerUserId),
+    {
+      config: {
+        private: true,
+        broadcast: { ack: true, self: true },
+        presence: { key: currentUserId },
+      },
+    },
+  );
+
+  channel
+    .on('broadcast', { event: '*' }, ({ event, payload }) => {
+      if (payload?.to === currentUserId || payload?.from === currentUserId) {
+        onBroadcast?.(event, payload);
+      }
+    })
+    .on('presence', { event: 'sync' }, () => {
+      const state = channel.presenceState();
+      onPresence?.(Boolean(state[peerUserId]?.length));
+    })
+    .subscribe(async (status) => {
+      onStatus?.(status);
+      if (status === 'SUBSCRIBED') {
+        await channel.track({
+          user_id: currentUserId,
+          online_at: new Date().toISOString(),
+        });
+      }
+    });
+
+  return {
+    send(event, payload = {}) {
+      return channel.send({
+        type: 'broadcast',
+        event,
+        payload: {
+          ...payload,
+          from: currentUserId,
+          to: peerUserId,
+        },
+      });
+    },
+    disconnect() {
+      return client.removeChannel(channel);
+    },
+  };
+}

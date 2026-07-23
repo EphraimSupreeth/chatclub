@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Avatar from './Avatar';
+import CallExperience from './CallExperience';
 
 function ChatPanel({
   classroom,
@@ -7,13 +8,44 @@ function ChatPanel({
   conversations,
   activeConversation,
   messages,
+  peerOnline = false,
+  peerTyping = false,
+  realtimeConnected = false,
+  call,
+  canCall = false,
   onSelectConversation,
   onSend,
   onReport,
+  onTyping,
 }) {
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
   const [sending, setSending] = useState(false);
+  const typingTimerRef = useRef(null);
+  const typingActiveRef = useRef(false);
+
+  useEffect(() => () => window.clearTimeout(typingTimerRef.current), []);
+
+  function updateTyping(nextDraft) {
+    if (!onTyping) return;
+    window.clearTimeout(typingTimerRef.current);
+    const isTyping = Boolean(nextDraft.trim());
+    if (isTyping && !typingActiveRef.current) {
+      typingActiveRef.current = true;
+      onTyping(true).catch(() => {});
+    }
+    if (!isTyping && typingActiveRef.current) {
+      typingActiveRef.current = false;
+      onTyping(false).catch(() => {});
+      return;
+    }
+    if (isTyping) {
+      typingTimerRef.current = window.setTimeout(() => {
+        typingActiveRef.current = false;
+        onTyping(false).catch(() => {});
+      }, 1800);
+    }
+  }
 
   async function handleSend(event) {
     event.preventDefault();
@@ -26,6 +58,9 @@ function ChatPanel({
     setNotice('');
     try {
       await onSend(draft);
+      await onTyping?.(false);
+      typingActiveRef.current = false;
+      window.clearTimeout(typingTimerRef.current);
       setDraft('');
     } catch (error) {
       setNotice(error.message);
@@ -91,11 +126,28 @@ function ChatPanel({
         <header className="message-header">
           <div>
             <h2 id="conversation-title">{activeConversation.name}</h2>
-            <p>{activeConversation.detail} · Invite only</p>
+            <p>
+              {activeConversation.kind === 'direct' && peerOnline
+                ? 'Online'
+                : activeConversation.detail}
+              {' · Invite only'}
+              {activeConversation.kind === 'direct' && realtimeConnected
+                ? ' · Live'
+                : ''}
+            </p>
           </div>
-          <button className="icon-button" type="button" aria-label="Conversation information">
-            i
-          </button>
+          <div className="message-header__actions">
+            {activeConversation.kind === 'direct' && call && (
+              <CallExperience
+                peerName={activeConversation.name}
+                call={call}
+                canCall={canCall}
+              />
+            )}
+            <button className="icon-button" type="button" aria-label="Conversation information">
+              i
+            </button>
+          </div>
         </header>
 
         <div className="classroom-reminder">
@@ -156,6 +208,7 @@ function ChatPanel({
               onChange={(event) => {
                 setDraft(event.target.value);
                 setNotice('');
+                updateTyping(event.target.value);
               }}
               placeholder={`Message ${activeConversation.name}`}
             />
@@ -164,7 +217,9 @@ function ChatPanel({
             </button>
           </div>
           <small>
-            {onSend
+            {peerTyping
+              ? `${activeConversation.name} is typing…`
+              : onSend
               ? 'Messages are visible only to authorized classroom members.'
               : 'Messages in this prototype are not sent or stored.'}
           </small>

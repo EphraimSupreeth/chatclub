@@ -607,6 +607,52 @@
   font-size: 0.7rem;
 }
 
+.message-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.call-button {
+  border: 1px solid #cbd8f5;
+  border-radius: 2rem;
+  padding: 0.48rem 0.8rem;
+  color: #294d9b;
+  background: var(--blue-soft);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.call-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.call-status {
+  position: absolute;
+  z-index: 5;
+  top: 4.6rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: var(--shadow);
+  font-size: 0.72rem;
+}
+
+.call-status button {
+  border: 0;
+  color: var(--danger);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .icon-button {
   width: 2rem;
   height: 2rem;
@@ -616,6 +662,160 @@
   background: transparent;
   font-family: serif;
   font-weight: 700;
+}
+
+.dialog-overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: rgb(18 31 43 / 58%);
+  backdrop-filter: blur(3px);
+  animation: dialog-fade 140ms ease-out;
+}
+
+.dialog-overlay--call {
+  background: rgb(10 18 25 / 88%);
+}
+
+.dialog-content,
+.call-room {
+  position: fixed;
+  z-index: 101;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100% - 2rem), 29rem);
+  transform: translate(-50%, -50%);
+  border-radius: 1.2rem;
+  background: white;
+  box-shadow: 0 28px 80px rgb(0 0 0 / 28%);
+  animation: dialog-rise 160ms ease-out;
+}
+
+.dialog-content {
+  padding: 1.6rem;
+}
+
+.dialog-content h2 {
+  margin-bottom: 0.55rem;
+  font-size: 1.25rem;
+}
+
+.dialog-content p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.4rem;
+}
+
+.dialog-actions .button--secondary {
+  margin-top: 0;
+}
+
+.call-room {
+  width: min(calc(100% - 2rem), 60rem);
+  padding: 1.2rem;
+  color: white;
+  background: #15222d;
+}
+
+.call-room > h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
+}
+
+.call-stage {
+  position: relative;
+  display: grid;
+  min-height: min(58vh, 34rem);
+  overflow: hidden;
+  place-items: center;
+  border-radius: 1rem;
+  background: #0c141a;
+}
+
+.call-video {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+}
+
+.call-video:last-child {
+  top: auto;
+  right: 1rem;
+  bottom: 1rem;
+  left: auto;
+  width: min(28%, 12rem);
+  aspect-ratio: 4 / 3;
+  border: 2px solid rgb(255 255 255 / 60%);
+  border-radius: 0.8rem;
+  background: #263847;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 30%);
+}
+
+.call-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.call-video span {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.7rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 0.35rem;
+  background: rgb(0 0 0 / 55%);
+  font-size: 0.68rem;
+}
+
+.call-room__status {
+  min-height: 1.2rem;
+  margin: 0.7rem 0 0;
+  color: #c5d1d9;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.call-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 0.7rem;
+}
+
+.call-controls button {
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 2rem;
+  padding: 0.65rem 1rem;
+  color: white;
+  background: #283a48;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.call-controls .call-controls__end {
+  border-color: #cc5360;
+  background: #a93643;
+}
+
+@keyframes dialog-fade {
+  from { opacity: 0; }
+}
+
+@keyframes dialog-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -47%);
+  }
 }
 
 .classroom-reminder {

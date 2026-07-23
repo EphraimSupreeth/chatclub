@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getClassroomData,
   reportMessage,
@@ -13,6 +13,8 @@ import ClassroomSidebar from './ClassroomSidebar';
 import ChatPanel from './ChatPanel';
 import CommunityPanel from './CommunityPanel';
 import ModeratorPanel from './ModeratorPanel';
+import useDirectRealtime from '../hooks/useDirectRealtime';
+import usePeerCall from '../hooks/usePeerCall';
 
 function toInitials(name = '') {
   return name
@@ -34,6 +36,9 @@ function LiveClassroom({ membership, user }) {
     blockedUserIds: [],
   });
   const [status, setStatus] = useState('Loading classroom…');
+  const signalSenderRef = useRef(() =>
+    Promise.reject(new Error('Open a direct conversation before calling.')),
+  );
   const classroomRecord = membership.classroom;
 
   const loadData = useCallback(async () => {
@@ -109,6 +114,31 @@ function LiveClassroom({ membership, user }) {
   const activeConversation =
     conversations.find((conversation) => conversation.id === activeConversationId) ??
     conversations[0];
+  const activePeerId =
+    activeConversation?.kind === 'direct' ? activeConversation.id : null;
+
+  const sendSignal = useCallback(
+    (event, payload) => signalSenderRef.current(event, payload),
+    [],
+  );
+  const call = usePeerCall({
+    sendSignal,
+    peerName: activeConversation?.name ?? 'Class member',
+  });
+  const directRealtime = useDirectRealtime({
+    classroomId: classroom.id,
+    currentUserId: user.id,
+    peerUserId: activePeerId,
+    onMessageChanged: loadData,
+    onSignal: call.handleSignal,
+  });
+  signalSenderRef.current = directRealtime.send;
+
+  useEffect(() => {
+    if (call.status !== 'idle') call.endCall('conversation-changed');
+    // Ending an active call is intentional when its private conversation changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePeerId]);
 
   const visibleMessages = data.messages
     .filter((message) => {
@@ -142,6 +172,7 @@ function LiveClassroom({ membership, user }) {
       await sendClassMessage(classroom.id, body);
     } else {
       await sendDirectMessage(classroom.id, activeConversation.id, body);
+      await directRealtime.send('message-changed', {});
     }
     await loadData();
   }
@@ -181,9 +212,19 @@ function LiveClassroom({ membership, user }) {
           conversations={conversations}
           activeConversation={activeConversation}
           messages={visibleMessages}
+          peerOnline={directRealtime.peerOnline}
+          peerTyping={directRealtime.peerTyping}
+          realtimeConnected={directRealtime.connected}
+          call={call}
+          canCall={
+            Boolean(activePeerId) &&
+            directRealtime.connected &&
+            !data.blockedUserIds.includes(activePeerId)
+          }
           onSelectConversation={setActiveConversationId}
           onSend={handleSend}
           onReport={handleReport}
+          onTyping={(active) => directRealtime.send('typing', { active })}
         />
       ) : activeView === 'moderation' ? (
         <ModeratorPanel

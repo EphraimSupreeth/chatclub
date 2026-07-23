@@ -19,7 +19,8 @@ describe('ChatClub classroom prototype', () => {
     expect(
       screen.getByRole('heading', { name: /connect chatclub to supabase/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/001_chatclub_mvp.sql/i)).toBeInTheDocument();
+    expect(screen.getByText(/run migrations/i)).toHaveTextContent('001');
+    expect(screen.getByText(/run migrations/i)).toHaveTextContent('004');
   });
 
   test('requires a private class code before entering', () => {
