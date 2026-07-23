@@ -94,6 +94,24 @@ npm run build
 npm run test:e2e
 ```
 
+The browser suite uses Chromium's fake camera and microphone to complete a real
+local WebRTC offer/answer and ICE negotiation. Before releasing calling to a
+classroom, also test two physical devices on separate networks. If signaling is
+live but the call cannot connect, verify that the configured ICE array includes
+a reachable TURN server.
+
+### Call acceptance check
+
+1. Sign in as two members of the same classroom on separate devices.
+2. Open the same direct conversation on both devices and confirm it shows
+   `Live`.
+3. Start, accept, and decline a call.
+4. Verify two-way audio, then enable and disable each camera.
+5. End the call from each side and confirm browser camera/microphone indicators
+   turn off.
+6. Repeat with one device on mobile data. A same-Wi-Fi success does not prove
+   TURN connectivity.
+
 ## Repository workflow
 
 `main` should be the source branch and GitHub Pages deployment target. Do not

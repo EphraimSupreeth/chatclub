@@ -17,8 +17,9 @@ function Video({ stream, muted, label }) {
 }
 
 export default function CallExperience({ peerName, call, canCall }) {
-  const active = ['connecting', 'connected', 'failed'].includes(call.status);
+  const active = ['connecting', 'connected'].includes(call.status);
   const incoming = call.status === 'incoming';
+  const failed = call.status === 'failed';
 
   return (
     <>
@@ -88,14 +89,40 @@ export default function CallExperience({ peerName, call, canCall }) {
                   : 'Connecting securely…')}
             </p>
             <div className="call-controls">
-              <button type="button" onClick={call.toggleMicrophone}>
+              <button type="button" onClick={call.toggleMicrophone} disabled={!call.mediaReady}>
                 {call.microphoneEnabled ? 'Mute' : 'Unmute'}
               </button>
-              <button type="button" onClick={call.toggleCamera}>
+              <button type="button" onClick={call.toggleCamera} disabled={!call.mediaReady}>
                 {call.cameraEnabled ? 'Camera off' : 'Camera on'}
               </button>
               <button className="call-controls__end" type="button" onClick={() => call.endCall()}>
                 End call
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={failed}
+        onOpenChange={(open) => {
+          if (!open && failed) call.endCall('dismissed');
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="dialog-overlay" />
+          <Dialog.Content className="dialog-content">
+            <Dialog.Title>Call ended</Dialog.Title>
+            <Dialog.Description>
+              {call.error || `The call with ${peerName} could not be connected.`}
+            </Dialog.Description>
+            <div className="dialog-actions">
+              <button
+                className="button button--primary"
+                type="button"
+                onClick={() => call.endCall('dismissed')}
+              >
+                Close
               </button>
             </div>
           </Dialog.Content>

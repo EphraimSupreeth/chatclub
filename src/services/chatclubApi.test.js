@@ -38,11 +38,39 @@ describe('private direct Realtime connection', () => {
       {
         config: {
           private: true,
-          broadcast: { ack: true, self: true },
+          broadcast: { ack: true, self: false },
           presence: { key: 'user-z' },
         },
       },
     );
+  });
+
+  test('delivers only events addressed by the selected classmate', () => {
+    const onBroadcast = vi.fn();
+    connectDirectConversation({
+      classroomId: 'classroom-id',
+      currentUserId: 'user-z',
+      peerUserId: 'user-a',
+      onBroadcast,
+    });
+    const broadcastHandler = channel.on.mock.calls.find(
+      ([type]) => type === 'broadcast',
+    )[2];
+
+    broadcastHandler({
+      event: 'call-answer',
+      payload: { from: 'user-z', to: 'user-a' },
+    });
+    expect(onBroadcast).not.toHaveBeenCalled();
+
+    broadcastHandler({
+      event: 'call-answer',
+      payload: { from: 'user-a', to: 'user-z' },
+    });
+    expect(onBroadcast).toHaveBeenCalledWith('call-answer', {
+      from: 'user-a',
+      to: 'user-z',
+    });
   });
 
   test('addresses every signal to the selected classmate', async () => {

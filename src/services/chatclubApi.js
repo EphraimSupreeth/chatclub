@@ -276,7 +276,7 @@ export function connectDirectConversation({
     {
       config: {
         private: true,
-        broadcast: { ack: true, self: true },
+        broadcast: { ack: true, self: false },
         presence: { key: currentUserId },
       },
     },
@@ -284,7 +284,7 @@ export function connectDirectConversation({
 
   channel
     .on('broadcast', { event: '*' }, ({ event, payload }) => {
-      if (payload?.to === currentUserId || payload?.from === currentUserId) {
+      if (payload?.to === currentUserId && payload?.from === peerUserId) {
         onBroadcast?.(event, payload);
       }
     })

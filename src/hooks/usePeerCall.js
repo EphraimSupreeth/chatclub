@@ -24,18 +24,26 @@ export default function usePeerCall({ sendSignal, peerName }) {
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [microphoneEnabled, setMicrophoneEnabled] = useState(true);
   const peerRef = useRef(null);
+  const peerPromiseRef = useRef(null);
   const localStreamRef = useRef(null);
   const pendingCandidatesRef = useRef([]);
+  const candidateKeysRef = useRef(new Set());
+  const descriptionKeysRef = useRef(new Set());
+  const lifecycleRef = useRef(0);
   const callRef = useRef(call);
 
   callRef.current = call;
 
   const cleanup = useCallback(() => {
+    lifecycleRef.current += 1;
     peerRef.current?.close();
     peerRef.current = null;
+    peerPromiseRef.current = null;
     stopMedia(localStreamRef.current);
     localStreamRef.current = null;
     pendingCandidatesRef.current = [];
+    candidateKeysRef.current.clear();
+    descriptionKeysRef.current.clear();
     setLocalStream(null);
     setRemoteStream(null);
     setCameraEnabled(false);
@@ -46,34 +54,64 @@ export default function usePeerCall({ sendSignal, peerName }) {
 
   const preparePeer = useCallback(async (callId) => {
     if (peerRef.current) return peerRef.current;
+    if (peerPromiseRef.current) return peerPromiseRef.current;
 
-    const stream = await getCallMedia({ video: false });
-    const peer = createPeerConnection();
-    stream.getTracks().forEach((track) => peer.addTrack(track, stream));
-    peer.addTransceiver('video', { direction: 'sendrecv' });
-    peer.ontrack = ({ streams }) => setRemoteStream(streams[0]);
-    peer.onicecandidate = ({ candidate }) => {
-      if (candidate) {
-        sendSignal('call-ice', { callId, candidate: candidate.toJSON() });
+    const lifecycle = lifecycleRef.current;
+    peerPromiseRef.current = (async () => {
+      const stream = await getCallMedia({ video: false });
+      if (lifecycle !== lifecycleRef.current) {
+        stopMedia(stream);
+        throw new DOMException('The call ended while requesting media.', 'AbortError');
       }
-    };
-    peer.onconnectionstatechange = () => {
-      if (peer.connectionState === 'connected') {
-        setCall((current) => ({ ...current, status: 'connected', error: '' }));
-      } else if (['failed', 'disconnected'].includes(peer.connectionState)) {
-        setCall((current) => ({
-          ...current,
-          status: 'failed',
-          error: 'The call connection was lost.',
-        }));
-      }
-    };
 
-    localStreamRef.current = stream;
-    peerRef.current = peer;
-    setLocalStream(stream);
-    return peer;
-  }, [sendSignal]);
+      const peer = createPeerConnection();
+      stream.getTracks().forEach((track) => peer.addTrack(track, stream));
+      peer.addTransceiver('video', { direction: 'sendrecv' });
+      peer.ontrack = ({ track, streams }) => {
+        if (lifecycle !== lifecycleRef.current) return;
+        setRemoteStream((currentStream) => {
+          if (streams[0]) return streams[0];
+          const nextStream = currentStream ?? new MediaStream();
+          if (!nextStream.getTracks().some(({ id }) => id === track.id)) {
+            nextStream.addTrack(track);
+          }
+          return nextStream;
+        });
+      };
+      peer.onicecandidate = ({ candidate }) => {
+        if (candidate && lifecycle === lifecycleRef.current) {
+          void sendSignal('call-ice', {
+            callId,
+            candidate: candidate.toJSON(),
+          });
+        }
+      };
+      peer.onconnectionstatechange = () => {
+        if (lifecycle !== lifecycleRef.current) return;
+        if (peer.connectionState === 'connected') {
+          setCall((current) => ({ ...current, status: 'connected', error: '' }));
+        } else if (peer.connectionState === 'failed') {
+          cleanup();
+          setCall((current) => ({
+            ...current,
+            status: 'failed',
+            error: 'The call connection failed. A TURN server may be required.',
+          }));
+        }
+      };
+
+      localStreamRef.current = stream;
+      peerRef.current = peer;
+      setLocalStream(stream);
+      return peer;
+    })();
+
+    try {
+      return await peerPromiseRef.current;
+    } finally {
+      peerPromiseRef.current = null;
+    }
+  }, [cleanup, sendSignal]);
 
   const startCall = useCallback(async () => {
     const callId = newCallId();
@@ -146,6 +184,7 @@ export default function usePeerCall({ sendSignal, peerName }) {
       if (event === 'call-accept' && current.status === 'inviting') {
         setCall((value) => ({ ...value, status: 'connecting' }));
         const peer = await preparePeer(payload.callId);
+        if (peer.signalingState !== 'stable') return;
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
         await sendSignal('call-offer', {
@@ -154,6 +193,12 @@ export default function usePeerCall({ sendSignal, peerName }) {
         });
       } else if (event === 'call-offer' && current.status === 'connecting') {
         const peer = await preparePeer(payload.callId);
+        const descriptionKey = `${payload.description?.type}:${payload.description?.sdp}`;
+        if (
+          descriptionKeysRef.current.has(descriptionKey) ||
+          peer.signalingState !== 'stable'
+        ) return;
+        descriptionKeysRef.current.add(descriptionKey);
         await peer.setRemoteDescription(payload.description);
         for (const candidate of pendingCandidatesRef.current) {
           await peer.addIceCandidate(candidate);
@@ -166,12 +211,21 @@ export default function usePeerCall({ sendSignal, peerName }) {
           description: peer.localDescription,
         });
       } else if (event === 'call-answer' && peerRef.current) {
+        const descriptionKey = `${payload.description?.type}:${payload.description?.sdp}`;
+        if (
+          descriptionKeysRef.current.has(descriptionKey) ||
+          peerRef.current.signalingState !== 'have-local-offer'
+        ) return;
+        descriptionKeysRef.current.add(descriptionKey);
         await peerRef.current.setRemoteDescription(payload.description);
         for (const candidate of pendingCandidatesRef.current) {
           await peerRef.current.addIceCandidate(candidate);
         }
         pendingCandidatesRef.current = [];
       } else if (event === 'call-ice' && payload.candidate) {
+        const candidateKey = JSON.stringify(payload.candidate);
+        if (candidateKeysRef.current.has(candidateKey)) return;
+        candidateKeysRef.current.add(candidateKey);
         if (peerRef.current?.remoteDescription) {
           await peerRef.current.addIceCandidate(payload.candidate);
         } else {
@@ -195,10 +249,27 @@ export default function usePeerCall({ sendSignal, peerName }) {
   }, []);
 
   const toggleCamera = useCallback(async () => {
+    const lifecycle = lifecycleRef.current;
+    const activePeer = peerRef.current;
+    const activeStream = localStreamRef.current;
+    if (!activePeer || !activeStream) {
+      setCall((current) => ({
+        ...current,
+        error: 'The call is no longer active.',
+      }));
+      return;
+    }
+
     const existingTrack = localStreamRef.current?.getVideoTracks()[0];
     if (existingTrack) {
-      existingTrack.enabled = !existingTrack.enabled;
-      setCameraEnabled(existingTrack.enabled);
+      const videoSender = activePeer.getTransceivers()
+        .find((transceiver) => transceiver.receiver.track.kind === 'video')
+        ?.sender;
+      await videoSender?.replaceTrack(null);
+      activeStream.removeTrack(existingTrack);
+      existingTrack.stop();
+      setLocalStream(new MediaStream(activeStream.getTracks()));
+      setCameraEnabled(false);
       return;
     }
 
@@ -207,12 +278,23 @@ export default function usePeerCall({ sendSignal, peerName }) {
         video: { facingMode: 'user' },
       });
       const cameraTrack = cameraStream.getVideoTracks()[0];
-      localStreamRef.current.addTrack(cameraTrack);
-      const videoSender = peerRef.current?.getTransceivers()
+      if (
+        lifecycle !== lifecycleRef.current ||
+        activePeer !== peerRef.current ||
+        activeStream !== localStreamRef.current
+      ) {
+        cameraTrack?.stop();
+        return;
+      }
+      if (!cameraTrack) throw new Error('No camera track was available.');
+
+      activeStream.addTrack(cameraTrack);
+      const videoSender = activePeer.getTransceivers()
         .find((transceiver) => transceiver.receiver.track.kind === 'video')
         ?.sender;
-      await videoSender?.replaceTrack(cameraTrack);
-      setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+      if (!videoSender) throw new Error('The video connection is not ready.');
+      await videoSender.replaceTrack(cameraTrack);
+      setLocalStream(new MediaStream(activeStream.getTracks()));
       setCameraEnabled(true);
     } catch (error) {
       setCall((current) => ({ ...current, error: error.message }));
@@ -225,6 +307,7 @@ export default function usePeerCall({ sendSignal, peerName }) {
     remoteStream,
     cameraEnabled,
     microphoneEnabled,
+    mediaReady: Boolean(localStream && peerRef.current),
     startCall,
     acceptCall,
     declineCall: () => endCall('declined'),

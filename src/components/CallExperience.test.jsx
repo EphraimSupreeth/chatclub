@@ -10,6 +10,7 @@ function makeCall(overrides = {}) {
     remoteStream: null,
     cameraEnabled: false,
     microphoneEnabled: true,
+    mediaReady: false,
     startCall: vi.fn(),
     acceptCall: vi.fn(),
     declineCall: vi.fn(),
@@ -46,5 +47,18 @@ describe('one-to-one call experience', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /join with camera off/i }));
     expect(call.acceptCall).toHaveBeenCalledOnce();
+  });
+
+  test('shows a safe close-only screen after connection failure', () => {
+    const call = makeCall({
+      status: 'failed',
+      error: 'The connection failed.',
+    });
+    render(<CallExperience peerName="Arjun Rao" call={call} canCall />);
+
+    expect(screen.getByRole('dialog')).toHaveTextContent('The connection failed.');
+    expect(screen.queryByRole('button', { name: 'Camera on' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(call.endCall).toHaveBeenCalledWith('dismissed');
   });
 });
