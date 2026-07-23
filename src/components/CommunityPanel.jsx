@@ -33,18 +33,28 @@ function CommunityPanel({
 
   if (view === 'announcements') {
     return (
-      <section className="content-panel">
-        <span className="eyebrow">Teacher updates</span>
-        <h1>Announcements</h1>
-        <p className="content-panel__intro">Important information for the whole class.</p>
-        <div className="announcement-grid">
+      <section className="content-panel updates-panel">
+        <span className="eyebrow">Pinned conversation</span>
+        <h1>Updates</h1>
+        <p className="content-panel__intro">
+          Read-only news shared with everyone in {classroom.name}.
+        </p>
+        <div className="updates-feed">
           {classroom.announcements.map((announcement) => (
-            <article className="content-card" key={announcement.id}>
-              <p className="content-card__meta">{announcement.date} · {announcement.author}</p>
-              <h2>{announcement.title}</h2>
-              <p>{announcement.body}</p>
+            <article className="update-post" key={announcement.id}>
+              <Avatar initials={announcement.author.slice(0, 2).toUpperCase()} tone="mint" />
+              <div>
+                <p className="content-card__meta">
+                  <strong>{announcement.author}</strong> · {announcement.date}
+                </p>
+                <h2>{announcement.title}</h2>
+                <p>{announcement.body}</p>
+              </div>
             </article>
           ))}
+          {classroom.announcements.length === 0 && (
+            <p className="empty-copy">No updates have been posted.</p>
+          )}
         </div>
       </section>
     );
@@ -87,8 +97,8 @@ function CommunityPanel({
 
   return (
     <section className="content-panel">
-      <span className="eyebrow">Help is always available</span>
-      <h1>Safety centre</h1>
+      <span className="eyebrow">Help when you need it</span>
+      <h1>Safety</h1>
       <p className="content-panel__intro">
         Classroom rules are backed by reporting, blocking, rate limits, and moderator
         review.

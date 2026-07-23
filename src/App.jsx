@@ -9,6 +9,8 @@ import ClassroomSidebar from './components/ClassroomSidebar';
 import ChatPanel from './components/ChatPanel';
 import CommunityPanel from './components/CommunityPanel';
 import CallsPanel from './components/CallsPanel';
+import PeoplePanel from './components/PeoplePanel';
+import MorePanel from './components/MorePanel';
 import JoinScreen from './components/JoinScreen';
 import SetupScreen from './components/SetupScreen';
 
@@ -16,6 +18,18 @@ function DemoApp() {
   const [hasEntered, setHasEntered] = useState(false);
   const [activeView, setActiveView] = useState('chat');
   const [activeConversationId, setActiveConversationId] = useState(conversations[0].id);
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    callSound: true,
+    desktopNotifications: false,
+  });
+
+  function openDemoConversation(memberId) {
+    const member = classroom.members.find((item) => item.id === memberId);
+    const conversation = conversations.find((item) =>
+      item.id === memberId || item.initials === member?.initials);
+    if (conversation) setActiveConversationId(conversation.id);
+    setActiveView('chat');
+  }
 
   if (!hasEntered) return <JoinScreen onEnter={() => setHasEntered(true)} />;
 
@@ -40,15 +54,28 @@ function DemoApp() {
           activeConversation={activeConversation}
           messages={messages[activeConversation.id] ?? []}
           onSelectConversation={setActiveConversationId}
+          onOpenUpdates={() => setActiveView('announcements')}
         />
       ) : activeView === 'calls' ? (
         <CallsPanel
           calls={[]}
           currentUserId={currentUser.id}
-          onOpenConversation={(peerId) => {
-            setActiveConversationId(peerId);
-            setActiveView('chat');
-          }}
+          onOpenConversation={openDemoConversation}
+        />
+      ) : activeView === 'people' ? (
+        <PeoplePanel
+          members={classroom.members}
+          currentUserId={currentUser.id}
+          availableUserIds={classroom.members
+            .filter((member) => member.online)
+            .map((member) => member.id)}
+          onOpenConversation={openDemoConversation}
+        />
+      ) : activeView === 'more' ? (
+        <MorePanel
+          preferences={notificationPreferences}
+          onChangePreferences={setNotificationPreferences}
+          onNavigate={setActiveView}
         />
       ) : (
         <CommunityPanel view={activeView} classroom={classroom} />

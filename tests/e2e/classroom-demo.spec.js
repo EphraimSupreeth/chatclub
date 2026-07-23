@@ -15,8 +15,10 @@ test('opens the moderated classroom demo and safety centre', async ({ page }) =>
   await expect(page.getByRole('heading', { name: 'Calls', exact: true })).toBeVisible();
   await expect(page.getByText('No calls yet')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Safety' }).click();
-  await expect(page.getByRole('heading', { name: 'Safety centre' })).toBeVisible();
+  await page.getByRole('button', { name: 'More' }).click();
+  await expect(page.getByRole('heading', { name: 'More', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /Safety/ }).click();
+  await expect(page.getByRole('heading', { name: 'Safety', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Report a concern' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Return to ChatClub messages' }).click();

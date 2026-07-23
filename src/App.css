@@ -2565,3 +2565,274 @@
     padding-inline: 0.65rem;
   }
 }
+
+/* Phase C and D: people discovery, communication updates, and secondary tools. */
+.conversation-card--updates {
+  border-color: #e4e0fa !important;
+  background: #f7f5ff !important;
+}
+
+.conversation-updates-icon {
+  display: grid;
+  width: 2.7rem;
+  height: 2.7rem;
+  place-items: center;
+  border-radius: 1rem;
+  color: #5147bd;
+  background: #e6e2ff;
+  font-size: 1.1rem;
+}
+
+.people-panel,
+.more-panel,
+.updates-panel {
+  width: 100%;
+  max-width: none;
+  background:
+    radial-gradient(circle at 88% 5%, rgb(102 88 232 / 7%), transparent 24rem),
+    #f8f8fc;
+}
+
+.people-panel__header,
+.people-list,
+.more-panel > :not(.eyebrow):not(h1):not(.content-panel__intro),
+.updates-panel > :not(.eyebrow):not(h1):not(.content-panel__intro) {
+  max-width: 58rem;
+}
+
+.people-panel__header,
+.people-list,
+.more-panel > *,
+.updates-panel > * {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.people-search {
+  display: grid;
+  max-width: 30rem;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid #dfddea;
+  border-radius: 0.9rem;
+  padding: 0 0.85rem;
+  color: #77738d;
+  background: white;
+  box-shadow: 0 7px 24px rgb(49 45 82 / 5%);
+}
+
+.people-search input {
+  width: 100%;
+  border: 0;
+  padding: 0.8rem 0;
+  outline: 0;
+  color: #29273d;
+  background: transparent;
+}
+
+.people-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.person-card {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid #e5e3ed;
+  border-radius: 1rem;
+  background: white;
+  box-shadow: 0 8px 24px rgb(49 45 82 / 5%);
+}
+
+.person-card__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.person-card__identity > div:last-child {
+  min-width: 0;
+}
+
+.person-card__identity h2 {
+  overflow: hidden;
+  margin: 0 0 0.18rem;
+  color: #29273d;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-card__identity p {
+  margin: 0;
+  color: #77738d;
+  font-size: 0.7rem;
+}
+
+.person-card__avatar {
+  position: relative;
+}
+
+.person-card__presence {
+  position: absolute;
+  right: -0.1rem;
+  bottom: -0.05rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #45c7a9;
+}
+
+.person-card .button {
+  flex: 0 0 auto;
+  padding: 0.65rem 0.85rem;
+}
+
+.people-empty {
+  grid-column: 1 / -1;
+  padding: 3rem 1rem;
+  color: #77738d;
+  text-align: center;
+}
+
+.people-empty h2 {
+  margin-bottom: 0.35rem;
+  color: #29273d;
+  font-size: 1rem;
+}
+
+.people-empty p {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.updates-feed {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.update-post {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.85rem;
+  padding: 1.1rem;
+  border: 1px solid #e5e3ed;
+  border-radius: 1rem;
+  background: white;
+  box-shadow: 0 8px 24px rgb(49 45 82 / 5%);
+}
+
+.update-post h2 {
+  margin: 0.25rem 0 0.4rem;
+  color: #29273d;
+  font-size: 1rem;
+}
+
+.update-post > div > p:last-child {
+  margin: 0;
+  color: #555166;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.more-links {
+  display: grid;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.more-links > button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid #e5e3ed;
+  border-radius: 1rem;
+  padding: 1rem;
+  color: #29273d;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.more-links > button > span:first-child {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  color: #5147bd;
+  background: #e8e5ff;
+}
+
+.more-links > button > span:nth-child(2) {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.more-links small,
+.preference-card small {
+  color: #77738d;
+  font-size: 0.7rem;
+}
+
+.preference-card {
+  padding: 1.2rem;
+  border: 1px solid #e5e3ed;
+  border-radius: 1rem;
+  background: white;
+}
+
+.preference-card > div {
+  padding-bottom: 0.9rem;
+}
+
+.preference-card h2 {
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
+}
+
+.preference-card p {
+  margin: 0;
+  color: #77738d;
+  font-size: 0.75rem;
+}
+
+.preference-card label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid #eeecf2;
+}
+
+.preference-card label > span {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.preference-card input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #6658e8;
+}
+
+@media (max-width: 680px) {
+  .people-list {
+    grid-template-columns: 1fr;
+  }
+
+  .person-card {
+    padding: 0.85rem;
+  }
+}

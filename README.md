@@ -28,6 +28,11 @@ Milestone 4 adds private realtime conversation signals and one-to-one calls:
   LiveKit's resilient media transport.
 - Separate audio and video actions open a permission-aware pre-call lobby.
 - Participant-only call history stores call metadata, never media or transcripts.
+- People provides searchable classmate discovery with direct entry into private
+  conversations.
+- Updates appears as a pinned, read-only conversation rather than primary
+  classroom administration.
+- More groups safety and device-local incoming-call preferences.
 - Block rules are enforced when authorizing direct Realtime channels.
 - Radix Dialog provides accessible focus and keyboard behavior for call prompts.
 

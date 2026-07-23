@@ -18,6 +18,7 @@ function ChatPanel({
   onSend,
   onReport,
   onTyping,
+  onOpenUpdates,
 }) {
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
@@ -99,6 +100,21 @@ function ChatPanel({
           <p>Pick up where you left off.</p>
         </div>
         <div className="conversation-items">
+          {onOpenUpdates && (
+            <button
+              type="button"
+              className="conversation-card conversation-card--updates"
+              onClick={onOpenUpdates}
+            >
+              <span className="conversation-updates-icon" aria-hidden="true">◁</span>
+              <span className="conversation-card__copy">
+                <strong>Updates</strong>
+                <small>{classroom.announcements.length
+                  ? classroom.announcements[0].title
+                  : 'No new updates'}</small>
+              </span>
+            </button>
+          )}
           {conversations.map((conversation, index) => (
             <button
               type="button"

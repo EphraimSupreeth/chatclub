@@ -58,7 +58,7 @@ describe('ChatClub classroom prototype', () => {
     fireEvent.click(screen.getByRole('button', { name: /enter class demo/i }));
     fireEvent.click(screen.getByRole('button', { name: /updates/i }));
 
-    expect(screen.getByRole('heading', { name: 'Announcements' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Updates' })).toBeInTheDocument();
     expect(screen.getByText('Science project teams')).toBeInTheDocument();
   });
 
@@ -74,5 +74,22 @@ describe('ChatClub classroom prototype', () => {
 
     expect(screen.getByRole('heading', { name: 'Calls' })).toBeInTheDocument();
     expect(screen.getByText('No calls yet')).toBeInTheDocument();
+  });
+
+  test('finds a person and opens their direct chat', () => {
+    render(<App />);
+    openDemo();
+
+    fireEvent.change(screen.getByLabelText(/class code/i), {
+      target: { value: 'DEMO-10A' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /enter class demo/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'People' }));
+    fireEvent.change(screen.getByLabelText('Search people'), {
+      target: { value: 'Arjun' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Message' }));
+
+    expect(screen.getByRole('heading', { name: 'Arjun Rao' })).toBeInTheDocument();
   });
 });

@@ -18,6 +18,8 @@ import ModeratorPanel from './ModeratorPanel';
 import useDirectRealtime from '../hooks/useDirectRealtime';
 import usePeerCall from '../hooks/usePeerCall';
 import CallsPanel from './CallsPanel';
+import PeoplePanel from './PeoplePanel';
+import MorePanel from './MorePanel';
 
 function toInitials(name = '') {
   return name
@@ -40,6 +42,17 @@ function LiveClassroom({ membership, user }) {
     calls: [],
   });
   const [status, setStatus] = useState('Loading classroom…');
+  const [notificationPreferences, setNotificationPreferences] = useState(() => {
+    try {
+      return {
+        callSound: true,
+        desktopNotifications: false,
+        ...JSON.parse(localStorage.getItem('chatclub-notification-preferences')),
+      };
+    } catch {
+      return { callSound: true, desktopNotifications: false };
+    }
+  });
   const signalSenderRef = useRef(() =>
     Promise.reject(new Error('Open a direct conversation before calling.')),
   );
@@ -178,6 +191,51 @@ function LiveClassroom({ membership, user }) {
   signalSenderRef.current = directRealtime.send;
 
   useEffect(() => {
+    localStorage.setItem(
+      'chatclub-notification-preferences',
+      JSON.stringify(notificationPreferences),
+    );
+  }, [notificationPreferences]);
+
+  useEffect(() => {
+    if (call.status !== 'incoming') return undefined;
+    if (
+      notificationPreferences.desktopNotifications &&
+      document.hidden &&
+      'Notification' in window &&
+      Notification.permission === 'granted'
+    ) {
+      new Notification(`Incoming ${call.mediaType} call`, {
+        body: `${activeConversation.name} is calling on ChatClub.`,
+      });
+    }
+    if (!notificationPreferences.callSound) return undefined;
+    let context;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return undefined;
+      context = new AudioContext();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.frequency.value = 520;
+      gain.gain.value = 0.045;
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.28);
+    } catch {
+      // Some browsers require another user gesture before playing alert audio.
+    }
+    return () => void context?.close();
+  }, [
+    activeConversation.name,
+    call.mediaType,
+    call.status,
+    notificationPreferences.callSound,
+    notificationPreferences.desktopNotifications,
+  ]);
+
+  useEffect(() => {
     if (call.status !== 'idle') call.endCall('conversation-changed');
     // Ending an active call is intentional when its private conversation changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -268,6 +326,7 @@ function LiveClassroom({ membership, user }) {
           onSend={handleSend}
           onReport={handleReport}
           onTyping={(active) => directRealtime.send('typing', { active })}
+          onOpenUpdates={() => setActiveView('announcements')}
         />
       ) : activeView === 'calls' ? (
         <CallsPanel
@@ -277,6 +336,25 @@ function LiveClassroom({ membership, user }) {
             setActiveConversationId(peerId);
             setActiveView('chat');
           }}
+        />
+      ) : activeView === 'people' ? (
+        <PeoplePanel
+          members={classroom.members}
+          currentUserId={user.id}
+          availableUserIds={[
+            user.id,
+            ...(activePeerId && directRealtime.peerOnline ? [activePeerId] : []),
+          ]}
+          onOpenConversation={(peerId) => {
+            setActiveConversationId(peerId);
+            setActiveView('chat');
+          }}
+        />
+      ) : activeView === 'more' ? (
+        <MorePanel
+          preferences={notificationPreferences}
+          onChangePreferences={setNotificationPreferences}
+          onNavigate={setActiveView}
         />
       ) : activeView === 'moderation' ? (
         <ModeratorPanel
