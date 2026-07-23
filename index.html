@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidChat - Professional Communication Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary-color: #06b6d4;
+            --success-color: #10b981;
+            --danger-color: #ef4444;    
+            --warning-color: #f59e0b;
+            --dark-bg: #0f172a;
+            --light-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-xs: 0 0px 1px rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #f0f4f8 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+            font-weight: 400;
+            transition: all 0.3s;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 440px;
+            border-radius: 20px;
+            padding: 48px 40px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .sparkle-icon { font-size: 36px; margin-bottom: 24px; }
+        .welcome-text { color: var(--primary-color); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 16px; }
+        h1 { color: var(--text-primary); font-size: 2.2rem; font-weight: 800; margin: 0 0 20px 0; letter-spacing: -0.8px; line-height: 1.2; }
+        .description { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; margin-bottom: 32px; font-weight: 400; }
+        .form-group { margin-bottom: 24px; }
+        label { display: block; color: var(--text-primary); font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; letter-spacing: 0.3px; }
+        input, select { width: 100%; padding: 14px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text-primary); outline: none; transition: all 0.3s; font-weight: 400; }
+        input:focus, select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); background-color: rgba(37, 99, 235, 0.02); }
+        
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .security-notice { margin-top: 28px; padding: 16px 18px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f7fe 100%); border: 1px solid #bae6fd; border-radius: 10px; font-size: 0.85rem; color: #0369a1; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .auth-toggle { margin-top: 24px; text-align: center; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
+        .auth-toggle a { color: var(--primary-color); font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+        .auth-toggle a:hover { opacity: 0.8; }
+        .hidden { display: none !important; }
+
+        .alert {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: none;
+            animation: slideDown 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert.show { display: block; }
+        .alert.success { background-color: #f0fdf4; border-left-color: #22c55e; border: 1px solid #86efac; color: #166534; }
+        .alert.error { background-color: #fef2f2; border-left-color: #ef4444; border: 1px solid #fca5a5; color: #991b1b; }
+        .alert.warning { background-color: #fffbeb; border-left-color: #f59e0b; border: 1px solid #fcd34d; color: #92400e; }
+        .alert.info { background-color: #f0f9ff; border-left-color: #06b6d4; border: 1px solid #7dd3fc; color: #0c4a6e; }
+
+        .workspace {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 1400px;
+            min-height: 750px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            overflow: hidden;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+        }
+
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-primary);
+            padding: 12px;
+            z-index: 101;
+            transition: all 0.2s;
+        }
+
+        .hamburger-btn:hover { color: var(--primary-color); }
+
+        .sidebar {
+            background: linear-gradient(180deg, #0f172a 0%, #1a2747 100%);
+            border-right: 1px solid rgba(226, 232, 240, 0.1);
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            overflow-y: auto;
+            transition: all 0.3s;
+        }
+
+        .sidebar.mobile-closed { transform: translateX(-100%); transition: transform 0.3s ease; }
+
+        .profile-box {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 18px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .profile-box:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-avatar { font-size: 32px; width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+
+        .profile-avatar:hover { transform: scale(1.08); }
+
+        .profile-name { font-weight: 700; color: white; font-size: 0.95rem; }
+        .profile-status { font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); font-weight: 500; }
+        .profile-email { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); }
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; }
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .nav-item:hover { color: white; background-color: rgba(255, 255, 255, 0.08); }
+        .nav-item.active { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; }
+
+        .main-content {
+            background-color: var(--light-bg);
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+            height: 100%;
+            transition: all 0.3s;
+        }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 20px; }
+        .section-title { font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0; letter-spacing: -0.5px; }
+        .section-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-badge { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; box-shadow: var(--shadow-md); }
+        
+        .section { display: none; }
+        .section.active { display: flex; }
+
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-secondary); }
+        .empty-state-icon { font-size: 64px; margin-bottom: 24px; }
+        .empty-state-text { font-size: 1.1rem; margin-bottom: 12px; font-weight: 700; }
+
+        .btn-add-contact { background: linear-gradient(135deg, var(--success-color), #059669); color: white; border: none; padding: 12px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; box-shadow: var(--shadow-md); }
+        .btn-add-contact:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--card-bg); border-radius: 16px; padding: 44px; max-width: 500px; width: 90%; margin: auto; box-shadow: var(--shadow-xl); border: 1px solid rgba(226, 232, 240, 0.6); transition: all 0.3s; }
+        .modal-title { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 24px; letter-spacing: -0.3px; }
+        .modal-close { float: right; font-size: 28px; color: var(--text-secondary); cursor: pointer; font-weight: 700; transition: all 0.2s; }
+        .modal-close:hover { color: var(--text-primary); }
+        .modal-form { display: flex; flex-direction: column; gap: 18px; }
+        .modal-form input { padding: 14px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; outline: none; background: var(--card-bg); transition: all 0.3s; }
+        .modal-form input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); }
+        .modal-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-cancel { flex: 1; background: var(--light-bg); color: var(--text-primary); border: 2px solid var(--border-color); padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; min-width: 100px; transition: all 0.2s; font-size: 0.9rem; }
+        .btn-cancel:hover { background: var(--border-color); }
+        .btn-create { flex: 1; background: linear-gradient(135deg, var(--success-color), #059669); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; min-width: 100px; transition: all 0.2s; font-size: 0.9rem; box-shadow: var(--shadow-md); }
+        .btn-create:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+        .emoji-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .emoji-option { cursor: pointer; font-size: 32px; text-align: center; padding: 12px; background: var(--light-bg); border-radius: 10px; transition: all 0.2s; border: 2px solid transparent; }
+        .emoji-option:hover, .emoji-option.selected { background: var(--primary-color); border-color: var(--primary-color); }
+
+        .contact-item { border: 2px solid var(--border-color); border-radius: 14px; padding: 24px; background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm); }
+        .contact-item:hover { border-color: var(--primary-color); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .contact-info { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 200px; }
+        .contact-avatar { font-size: 32px; width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; flex-shrink: 0; font-weight: 800; }
+        .contact-details h3 { color: var(--text-primary); font-weight: 800; margin-bottom: 4px; font-size: 1rem; }
+        .contact-details p { color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
+        .contact-meta { font-size: 0.75rem; color: #999; margin-top: 6px; font-weight: 500; }
+        .contact-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-call { background: linear-gradient(135deg, var(--secondary-color), #0891b2); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+        .btn-call:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-remove { background: var(--danger-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+        .btn-remove:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+        .group-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; }
+        .group-card { border: 2px solid var(--border-color); border-radius: 14px; padding: 24px; text-align: center; background: var(--card-bg); cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+        .group-card:hover { border-color: var(--primary-color); transform: translateY(-6px); box-shadow: var(--shadow-md); }
+        .group-icon { font-size: 44px; margin-bottom: 12px; }
+        .group-name { font-weight: 800; color: var(--text-primary); margin-bottom: 8px; font-size: 1.05rem; }
+        .group-count { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px; font-weight: 600; }
+        .group-desc { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px; font-weight: 500; }
+
+        .meet-item { border-left: 5px solid var(--primary-color); background: var(--card-bg); border-top: 2px solid var(--border-color); border-right: 2px solid var(--border-color); border-bottom: 2px solid var(--border-color); border-radius: 0 14px 14px 0; padding: 22px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm); }
+        .meet-item:hover { background: var(--light-bg); box-shadow: var(--shadow-md); }
+        .meet-info { flex: 1; min-width: 200px; }
+        .meet-info h3 { color: var(--text-primary); font-size: 1.1rem; margin-bottom: 6px; font-weight: 800; }
+        .meet-info p { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
+        .meet-status { font-size: 0.8rem; margin-top: 8px; padding: 6px 12px; background: #e0f2fe; color: #0369a1; border-radius: 6px; display: inline-block; font-weight: 700; }
+
+        .calendar-wrapper { max-width: 450px; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 14px; padding: 24px; width: 100%; box-shadow: var(--shadow-md); transition: all 0.3s; }
+        .calendar-header { font-weight: 800; font-size: 1.2rem; color: var(--text-primary); text-align: center; margin-bottom: 18px; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-nav button { background: var(--light-bg); border: 2px solid var(--border-color); padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; color: var(--primary-color); transition: all 0.2s; font-size: 0.9rem; }
+        .calendar-nav button:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; font-weight: 700; color: var(--text-secondary); }
+        .day-header { color: var(--primary-color); margin-bottom: 8px; font-size: 0.85rem; font-weight: 800; }
+        .day-cell { padding: 12px 8px; border-radius: 8px; cursor: pointer; background-color: var(--light-bg); transition: all 0.2s; border: 2px solid transparent; }
+        .day-cell:hover { background-color: var(--primary-color); color: white; }
+        .day-cell.event-marked { background-color: var(--primary-color); color: white; font-weight: 800; border: 2px solid var(--primary-color); }
+        .day-cell.today { background-color: #fff4e6; color: #92400e; font-weight: 800; }
+
+        .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: white; border-bottom: 1px solid var(--border-color); position: fixed; top: 0; left: 0; right: 0; z-index: 102; box-shadow: var(--shadow-sm); transition: all 0.3s; }
+
+        .friend-options { display: flex; flex-wrap: wrap; gap: 12px; }
+        .friend-option { background: var(--card-bg); border: 2px solid var(--border-color); color: var(--text-primary); padding: 12px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+        .friend-option:hover { border-color: var(--primary-color); background: #f0f9ff; }
+        .friend-option.selected { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border-color: var(--primary-color); }
+
+        .chat-cards-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .chat-card { 
+            border: 2px solid var(--border-color); 
+            border-radius: 16px; 
+            overflow: hidden; 
+            background: var(--card-bg); 
+            transition: all 0.3s;
+            box-shadow: var(--shadow-md);
+        }
+        .chat-card:hover { 
+            border-color: var(--primary-color); 
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+        .chat-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: white;
+            transition: all 0.3s;
+        }
+        .chat-card-avatar {
+            font-size: 32px;
+            width: 54px;
+            height: 54px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chat-card-info h3 { font-weight: 800; margin-bottom: 4px; font-size: 1rem; letter-spacing: -0.3px; }
+        .chat-card-info p { font-size: 0.85rem; opacity: 0.9; font-weight: 500; }
+        .chat-card-body { padding: 22px; min-height: 180px; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; max-height: 120px; overflow-y: auto; }
+        .chat-message { 
+            padding: 9px 13px; 
+            border-radius: 10px; 
+            font-size: 0.85rem; 
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        .chat-message.sent { 
+            background: #f0f9ff; 
+            color: #0c4a6e;
+            margin-left: auto;
+            max-width: 80%;
+            text-align: right;
+        }
+        .chat-message.received { 
+            background: #fef3c7; 
+            color: #78350f;
+            margin-right: auto;
+            max-width: 80%;
+        }
+        .chat-card-footer { 
+            display: flex; 
+            gap: 12px; 
+            padding-top: 16px; 
+            border-top: 1px solid var(--border-color);
+        }
+        .chat-card-btn {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .chat-card-btn.view {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        .chat-card-btn.view:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .chat-card-btn.delete {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .chat-card-btn.delete:hover { background: #fca5a5; }
+
+        .invite-box {
+            margin-top: 36px;
+            padding: 28px;
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            border-radius: 14px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .invite-box-title {
+            color: white;
+            font-weight: 800;
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+        .invite-box-desc {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        .invite-link-box {
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            flex-wrap: wrap;
+        }
+        .invite-link-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.12);
+            border: none;
+            color: white;
+            font-weight: 700;
+            outline: none;
+            min-width: 150px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .invite-link-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .copy-feedback {
+            color: white;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            display: none;
+            font-weight: 700;
+        }
+
+        body.dark-mode {
+            --light-bg: #1a1f2e;
+            --card-bg: #232d42;
+            --text-primary: #e8eef7;
+            --text-secondary: #a8b2c1;
+            --border-color: #3a4558;
+            background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 50%, #1a2332 100%);
+        }
+
+        body.dark-mode .card { background: #232d42; }
+        body.dark-mode .workspace { background: #232d42; }
+        body.dark-mode .sidebar { background: linear-gradient(180deg, #0f1419 0%, #151d2b 100%); }
+        body.dark-mode .main-content { background: #1a1f2e; }
+        body.dark-mode input, body.dark-mode select { background: #2a3447; color: #e8eef7; border-color: #3a4558; }
+        body.dark-mode input:focus, body.dark-mode select:focus { background: #323d54; }
+        body.dark-mode .top-bar { background: #232d42; border-color: #3a4558; }
+        body.dark-mode .modal-content { background: #232d42; }
+        body.dark-mode .modal-form input { background: #2a3447; color: #e8eef7; border-color: #3a4558; }
+        body.dark-mode .contact-item { background: #2a3447; border-color: #3a4558; }
+        body.dark-mode .group-card { background: #2a3447; border-color: #3a4558; }
+        body.dark-mode .meet-item { background: #2a3447; border-color: #3a4558; }
+        body.dark-mode .calendar-wrapper { background: #2a3447; border-color: #3a4558; }
+        body.dark-mode .chat-card { background: #2a3447; border-color: #3a4558; }
+        body.dark-mode .friend-option { background: #2a3447; border-color: #3a4558; color: #e8eef7; }
+        body.dark-mode .security-notice { background: linear-gradient(135deg, rgba(3, 105, 161, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%); border-color: rgba(6, 182, 212, 0.3); }
+
+        @media (max-width: 768px) {
+            .card { padding: 32px 24px; border-radius: 16px; }
+            h1 { font-size: 1.6rem; }
+            .workspace { grid-template-columns: 1fr; min-height: auto; border-radius: 16px; max-height: 90vh; display: flex; flex-direction: column; }
+            .hamburger-btn { display: block; }
+            .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 260px; padding: 16px; gap: 16px; z-index: 99; overflow-y: auto; transform: translateX(0); transition: transform 0.3s ease; }
+            .sidebar.mobile-closed { transform: translateX(-100%); }
+            .main-content { padding: 60px 20px 80px 20px; width: 100%; flex: 1; }
+            .section-title { font-size: 1.4rem; margin-bottom: 16px; }
+            .section-header { flex-direction: column; }
+            .top-bar { display: flex; }
+            .workspace { margin-top: 60px; }
+            .chat-cards-wrapper { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 24px 18px; border-radius: 14px; }
+            h1 { font-size: 1.4rem; }
+            input, select { padding: 12px 14px; font-size: 0.9rem; border-radius: 8px; }
+            .btn-submit { padding: 14px; font-size: 0.9rem; border-radius: 8px; }
+            .chat-cards-wrapper { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: SIGNUP/LOGIN CARD -->
+    <div class="card" id="authScreen">
+        <div class="sparkle-icon">🚀</div>
+        <div class="welcome-text">Welcome to KidChat</div>
+        <h1 id="authTitle">Join the Communication Hub</h1>
+        <div class="description" id="authDesc">Access your dedicated areas for chatting, calls, groups, meets, and scheduling.</div>
+
+        <div class="alert" id="alertBox"></div>
+
+        <!-- SIGNUP FORM -->
+        <div id="signupForm">
+            <div class="form-group">
+                <label>Your name</label>
+                <input type="text" id="nameInput" placeholder="Enter your name">
+            </div>
+
+            <div class="form-group">
+                <label>Email address</label>
+                <input type="email" id="emailInput" placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="passwordInput" placeholder="Create a password">
+            </div>
+
+            <div class="form-group">
+                <label>Choose Avatar Icon</label>
+                <select id="avatarSelect">
+                    <option value="👤">Profile (👤)</option>
+                    <option value="🦊">Fox (🦊)</option>
+                    <option value="🐼">Panda (🐼)</option>
+                    <option value="🚀">Rocket (🚀)</option>
+                </select>
+            </div>
+
+            <button class="btn-submit" onclick="createAccount()">Create Account</button>
+
+            <div class="auth-toggle">
+                Already have an account? <a onclick="toggleAuthMode()">Sign In</a>
+            </div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="loginForm" style="display: none;">
+            <div class="form-group">
+                <label>Email address</label>
+                <input type="email" id="loginEmailInput" placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPasswordInput" placeholder="Enter your password">
+            </div>
+
+            <button class="btn-submit" onclick="loginAccount()">Sign In</button>
+
+            <div class="auth-toggle">
+                Don't have an account? <a onclick="toggleAuthMode()">Create Account</a>
+            </div>
+        </div>
+
+        <div class="security-notice">
+            <span>🔒</span>
+            <span><strong>Secure:</strong> Your data is encrypted and protected with industry-standard security.</span>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: WORKSPACE HUB -->
+    <div class="workspace hidden" id="workspaceHub">
+        
+        <!-- TOP BAR FOR MOBILE -->
+        <div class="top-bar" id="topBar" style="display: none;">
+            <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">☰</button>
+            <div style="font-weight: 800; color: var(--text-primary);">KidChat</div>
+            <div style="width: 40px;"></div>
+        </div>
+
+        <!-- SIDEBAR NAVIGATION MENU -->
+        <div class="sidebar" id="sidebar">
+            <div class="profile-box" onclick="openProfileSettings()">
+                <div class="profile-avatar" id="profileAvatar">👤</div>
+                <div>
+                    <div class="profile-name" id="profileName">User</div>
+                    <div class="profile-status">Active</div>
+                    <div class="profile-email" id="profileEmail"></div>
+                </div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="switchSection('chat')">
+                    <span>💬</span> <span class="nav-label">Chat</span>
+                </div>
+                <div class="nav-item" onclick="switchSection('call')">
+                    <span>📞</span> <span class="nav-label">Call</span>
+                </div>
+                <div class="nav-item" onclick="switchSection('contacts')">
+                    <span>📇</span> <span class="nav-label">Contacts</span>
+                </div>
+                <div class="nav-item" onclick="switchSection('groups')">
+                    <span>👥</span> <span class="nav-label">Groups</span>
+                </div>
+                <div class="nav-item" onclick="switchSection('meets')">
+                    <span>📅</span> <span class="nav-label">Meets</span>
+                </div>
+                <div class="nav-item" onclick="switchSection('calendar')">
+                    <span>📆</span> <span class="nav-label">Calendar</span>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: auto; width: 100%;">
+                <button class="btn-submit" onclick="logout()" style="background: var(--danger-color); padding: 13px; font-size: 0.85rem; width: 100%; font-weight: 700;">Sign Out</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="main-content">
+            
+            <!-- CHAT SECTION WITH CARDS -->
+            <div class="section active" id="chatSection" style="flex-direction: column;">
+                <div class="section-header">
+                    <div class="section-title">💬 Messages</div>
+                    <div class="section-stats">
+                        <div class="stat-badge">Conversations: <span id="chatContactCount">0</span></div>
+                    </div>
+                </div>
+                <div class="chat-cards-wrapper" id="chatCardsContainer"></div>
+            </div>
+
+            <!-- CALL SECTION -->
+            <div class="section" id="callSection" style="flex-direction: column;">
+                <div class="section-header">
+                    <div class="section-title">📞 Calls</div>
+                    <div class="section-stats">
+                        <div class="stat-badge">Available: <span id="callContactCountBadge">0</span></div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px; display: block; font-weight: 700;">Select a contact:</label>
+                    <div class="friend-options" id="callContactOptions"></div>
+                </div>
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 64px; margin-bottom: 24px;">📞</div>
+                    <p style="color: var(--text-secondary); font-size: 1rem; font-weight: 600;">Select a contact to make a call</p>
+                </div>
+            </div>
+
+            <!-- CONTACTS SECTION -->
+            <div class="section" id="contactsSection" style="flex-direction: column;">
+                <div class="section-header">
+                    <div class="section-title">📇 Contacts</div>
+                    <div style="display: flex; gap: 16px;">
+                        <div class="stat-badge">Total: <span id="totalContacts">0</span></div>
+                        <button class="btn-add-contact" onclick="openAddContactModal()"><span>+</span> Add Contact</button>
+                    </div>
+                </div>
+                <div id="contactsList" style="display: flex; flex-direction: column; gap: 18px;"></div>
+                
+                <!-- INVITE LINK SECTION -->
+                <div class="invite-box">
+                    <div class="invite-box-title">📧 Invite Friends</div>
+                    <div class="invite-box-desc">Share this link to invite your friends to join KidChat:</div>
+                    <div class="invite-link-box">
+                        <input type="text" id="inviteLink" class="invite-link-input" value="https://chatclub.oneapp.dev/" readonly onclick="this.select()">
+                        <button class="copy-btn" onclick="copyInviteLink()">📋 Copy</button>
+                    </div>
+                    <div class="copy-feedback" id="copyFeedback">✓ Copied to clipboard!</div>
+                </div>
+            </div>
+
+            <!-- GROUPS SECTION -->
+            <div class="section" id="groupsSection" style="flex-direction: column;">
+                <div class="section-header">
+                    <div class="section-title">👥 Groups</div>
+                    <div style="display: flex; gap: 16px;">
+                        <div class="stat-badge">Total: <span id="totalGroups">0</span></div>
+                        <button class="btn-add-contact" onclick="openCreateGroupModal()"><span>+</span> Create Group</button>
+                    </div>
+                </div>
+                <div class="group-container" id="groupsContainer"></div>
+            </div>
+
+            <!-- MEETS SECTION -->
+            <div class="section" id="meetsSection" style="flex-direction: column;">
+                <div class="section-header">
+                    <div class="section-title">📅 Meets</div>
+                    <div style="display: flex; gap: 16px;">
+                        <div class="stat-badge">Scheduled: <span id="totalMeets">0</span></div>
+                        <button class="btn-add-contact" onclick="openCreateMeetModal()"><span>+</span> Schedule Meet</button>
+                    </div>
+                </div>
+                <div id="meetsList" style="display: flex; flex-direction: column; gap: 18px;"></div>
+            </div>
+
+            <!-- CALENDAR SECTION -->
+            <div class="section" id="calendarSection" style="flex-direction: column; align-items: center;">
+                <div class="section-header" style="width: 100%;">
+                    <div class="section-title">📆 Calendar</div>
+                    <div class="stat-badge">Events: <span id="totalEvents">0</span></div>
+                </div>
+                <div class="calendar-wrapper">
+                    <div class="calendar-nav">
+                        <button onclick="previousMonth()">← Prev</button>
+                        <span class="calendar-header" id="monthYear">January 2025</span>
+                        <button onclick="nextMonth()">Next →</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD CONTACT MODAL -->
+    <div class="modal" id="addContactModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAddContactModal()">&times;</span>
+            <div class="modal-title">Add a Contact</div>
+            <div class="modal-form">
+                <input type="text" id="contactNameInput" placeholder="Contact name">
+                <label style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 700;">Choose an avatar:</label>
+                <div class="emoji-selector">
+                    <div class="emoji-option" onclick="selectContactEmoji('👦')">👦</div>
+                    <div class="emoji-option" onclick="selectContactEmoji('👧')">👧</div>
+                    <div class="emoji-option" onclick="selectContactEmoji('🦊')">🦊</div>
+                    <div class="emoji-option" onclick="selectContactEmoji('🐼')">🐼</div>
+                </div>
+                <input type="email" id="contactEmailInput" placeholder="Email (optional)">
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeAddContactModal()">Cancel</button>
+                    <button class="btn-create" onclick="addContact()">Add Contact</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE GROUP MODAL -->
+    <div class="modal" id="createGroupModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCreateGroupModal()">&times;</span>
+            <div class="modal-title">Create a Group</div>
+            <div class="modal-form">
+                <input type="text" id="groupNameInput" placeholder="Group name">
+                <label style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 700;">Choose an emoji:</label>
+                <div class="emoji-selector">
+                    <div class="emoji-option" onclick="selectEmoji('🎨')">🎨</div>
+                    <div class="emoji-option" onclick="selectEmoji('🎮')">🎮</div>
+                    <div class="emoji-option" onclick="selectEmoji('📚')">📚</div>
+                    <div class="emoji-option" onclick="selectEmoji('🎵')">🎵</div>
+                </div>
+                <input type="text" id="groupDescInput" placeholder="Description (optional)">
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeCreateGroupModal()">Cancel</button>
+                    <button class="btn-create" onclick="createGroup()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE MEET MODAL -->
+    <div class="modal" id="createMeetModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCreateMeetModal()"></span>
+            <div class="modal-title">Schedule a Meet</div>
+            <div class="modal-form">
+                <input type="text" id="meetNameInput" placeholder="Meet topic">
+                <input type="date" id="meetDateInput">
+                <input type="time" id="meetTimeInput">
+                <input type="text" id="meetDescInput" placeholder="Description (optional)">
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeCreateMeetModal()">Cancel</button>
+                    <button class="btn-create" onclick="createMeet()">Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE CALENDAR EVENT MODAL -->
+    <div class="modal" id="createEventModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCreateEventModal()">&times;</span>
+            <div class="modal-title">Create Event for <span id="eventDateDisplay">Date</span></div>
+            <div class="modal-form">
+                <input type="text" id="eventNameInput" placeholder="Event name">
+                <input type="time" id="eventTimeInput">
+                <label style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 700;">Event Type:</label>
+                <div class="emoji-selector">
+                    <div class="emoji-option" onclick="selectEventType('📅')">📅</div>
+                    <div class="emoji-option" onclick="selectEventType('🎉')">🎉</div>
+                    <div class="emoji-option" onclick="selectEventType('📚')">📚</div>
+                    <div class="emoji-option" onclick="selectEventType('🏆')">🏆</div>
+                    <div class="emoji-option" onclick="selectEventType('🎂')">🎂</div>
+                    <div class="emoji-option" onclick="selectEventType('✈️')">✈️</div>
+                    <div class="emoji-option" onclick="selectEventType('💼')">💼</div>
+                    <div class="emoji-option" onclick="selectEventType('⚽')">⚽</div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeCreateEventModal()">Cancel</button>
+                    <button class="btn-create" onclick="createEvent()">Add Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE SETTINGS MODAL -->
+    <div class="modal" id="profileSettingsModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeProfileSettings()">&times;</span>
+            <div class="modal-title">Profile Settings</div>
+            <div class="modal-form">
+                <label style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 700;">Change Avatar:</label>
+                <div class="emoji-selector">
+                    <div class="emoji-option" onclick="changeProfileAvatar('👤')">👤</div>
+                    <div class="emoji-option" onclick="changeProfileAvatar('🦊')">🦊</div>
+                    <div class="emoji-option" onclick="changeProfileAvatar('🐼')">🐼</div>
+                    <div class="emoji-option" onclick="changeProfileAvatar('🚀')">🚀</div>
+                    <div class="emoji-option" onclick="changeProfileAvatar('😊')">😊</div>
+                    <div class="emoji-option" onclick="changeProfileAvatar('🎨')">🎨</div>
+                    <div class="emoji-option" onclick="changeProfileAvatar('⭐')">⭐</div>
+                    <div class="emoji-option" onclick="changeProfileAvatar('🎯')">🎯</div>
+                </div>
+                <label style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; margin-top: 20px;">Theme:</label>
+                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                    <button class="theme-btn" id="lightThemeBtn" onclick="setTheme('light')" style="flex: 1; padding: 14px; background: #f0f9ff; color: #0369a1; border: 2px solid #0369a1; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s;">☀️ Light</button>
+                    <button class="theme-btn" id="darkThemeBtn" onclick="setTheme('dark')" style="flex: 1; padding: 14px; background: #1a1f2e; color: #06b6d4; border: 2px solid #3a4558; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🌙 Dark</button>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeProfileSettings()" style="width: 100%;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userContacts = [];
+        let userGroups = [];
+        let userMeets = [];
+        let calendarEvents = {};
+        let selectedContactEmoji = '👦';
+        let selectedEmoji = '👥';
+        let selectedEventType = '📅';
+        let currentUserName = '';
+        let currentUserEmail = '';
+        let currentUserAvatar = '👤';
+        let selectedFriend = null;
+        let chatHistories = {};
+        let isMobileMenuOpen = false;
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedEventDate = null;
+
+        function showAlert(message, type = 'info') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert show ${type}`;
+            alertBox.innerHTML = message;
+            if (type !== 'error') {
+                setTimeout(() => {
+                    alertBox.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        function toggleAuthMode() {
+            const isSignupMode = document.getElementById('signupForm').style.display !== 'none';
+            if (isSignupMode) {
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('authTitle').textContent = 'Welcome Back!';
+                document.getElementById('authDesc').textContent = 'Sign in to your account to continue.';
+            } else {
+                document.getElementById('signupForm').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('authTitle').textContent = 'Join the Communication Hub';
+                document.getElementById('authDesc').textContent = 'Access your dedicated areas for chatting, calls, groups, meets, and scheduling.';
+            }
+        }
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function createAccount() {
+            const name = document.getElementById('nameInput').value.trim();
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            const avatar = document.getElementById('avatarSelect').value;
+
+            if (!name || !email || !password) {
+                showAlert('Please fill all fields!', 'error');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showAlert('❌ Please enter a valid email address!', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters!', 'error');
+                return;
+            }
+
+            currentUserName = name;
+            currentUserEmail = email;
+            currentUserAvatar = avatar;
+
+            const userData = { name, email, avatar, password };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            localStorage.setItem('user_' + name, JSON.stringify({
+                contacts: [], groups: [], meets: [], chatHistories: {}, events: {}, password
+            }));
+
+            showAlert('✅ Account created successfully!', 'success');
+            setTimeout(() => {
+                loadUserData();
+                launchHubWorkspace();
+            }, 1000);
+        }
+
+        function loginAccount() {
+            const email = document.getElementById('loginEmailInput').value.trim();
+            const password = document.getElementById('loginPasswordInput').value.trim();
+
+            if (!email || !password) {
+                showAlert('Please enter email and password!', 'error');
+                return;
+            }
+
+            const allKeys = Object.keys(localStorage);
+            for (let key of allKeys) {
+                if (key.startsWith('user_')) {
+                    const userData = JSON.parse(localStorage.getItem(key));
+                    if (userData && userData.email === email) {
+                        if (userData.password === password) {
+                            const userInfo = JSON.parse(localStorage.getItem('currentUser')) || {};
+                            currentUserName = userData.name;
+                            currentUserEmail = email;
+                            currentUserAvatar = userData.avatar || '👤';
+                            localStorage.setItem('currentUser', JSON.stringify({
+                                name: currentUserName, email, avatar: currentUserAvatar, password
+                            }));
+                            loadUserData();
+                            launchHubWorkspace();
+                            return;
+                        } else {
+                            showAlert('❌ Incorrect password!', 'error');
+                            return;
+                        }
+                    }
+                }
+            }
+            showAlert('Account not found!', 'error');
+        }
+
+        function loadUserData() {
+            const userData = JSON.parse(localStorage.getItem('user_' + currentUserName));
+            if (userData) {
+                userContacts = userData.contacts || [];
+                userGroups = userData.groups || [];
+                userMeets = userData.meets || [];
+                chatHistories = userData.chatHistories || {};
+                calendarEvents = userData.events || {};
+            }
+        }
+
+        function saveUserData() {
+            localStorage.setItem('user_' + currentUserName, JSON.stringify({
+                contacts: userContacts, groups: userGroups, meets: userMeets, chatHistories, events: calendarEvents
+            }));
+        }
+
+        function updateStats() {
+            document.getElementById('chatContactCount').textContent = userContacts.length;
+            document.getElementById('callContactCountBadge').textContent = userContacts.length;
+            document.getElementById('totalContacts').textContent = userContacts.length;
+            document.getElementById('totalGroups').textContent = userGroups.length;
+            document.getElementById('totalMeets').textContent = userMeets.length;
+            document.getElementById('totalEvents').textContent = Object.keys(calendarEvents).length;
+        }
+
+        function renderChatCards() {
+            const container = document.getElementById('chatCardsContainer');
+            container.innerHTML = '';
+            
+            if (userContacts.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No conversations yet!</div><p style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;">Add contacts to start messaging.</p></div>';
+                return;
+            }
+
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b'];
+            
+            userContacts.forEach((contact, idx) => {
+                const history = chatHistories[contact.name] || [];
+                const lastMessages = history.slice(-2);
+                const color = colors[idx % colors.length];
+
+                const card = document.createElement('div');
+                card.className = 'chat-card';
+                card.innerHTML = `
+                    <div class="chat-card-header" style="background: linear-gradient(135deg, ${color} 0%, ${color}dd 100%);">
+                        <div class="chat-card-avatar">${contact.avatar}</div>
+                        <div class="chat-card-info">
+                            <h3>${contact.name}</h3>
+                            <p>${history.length} messages</p>
+                        </div>
+                    </div>
+                    <div class="chat-card-body">
+                        <div class="chat-messages">
+                            ${lastMessages.map(msg => `
+                                <div class="chat-message ${msg.sender === currentUserName ? 'sent' : 'received'}">
+                                    ${msg.text}
+                                </div>
+                            `).join('')}
+                            ${lastMessages.length === 0 ? '<p style="color: #999; text-align: center; font-size: 0.9rem;">No messages yet</p>' : ''}
+                        </div>
+                        <div class="chat-card-footer">
+                            <button class="chat-card-btn view" onclick="openChatWithContact(${idx})">View Chat</button>
+                            <button class="chat-card-btn delete" onclick="clearChatHistory(${idx})">Clear</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openChatWithContact(idx) {
+            selectFriend(userContacts[idx]);
+            switchSection('chat');
+            document.getElementById('chatSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearChatHistory(idx) {
+            const contactName = userContacts[idx].name;
+            if (confirm(`Clear chat history with ${contactName}?`)) {
+                chatHistories[contactName] = [];
+                renderChatCards();
+                saveUserData();
+                showAlert(`Chat history cleared.`, 'info');
+            }
+        }
+
+        function launchHubWorkspace() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('workspaceHub').classList.remove('hidden');
+            document.getElementById('profileName').textContent = currentUserName;
+            document.getElementById('profileAvatar').textContent = currentUserAvatar;
+            document.getElementById('profileEmail').textContent = currentUserEmail.substring(0, 15) + '...';
+            renderChatCards();
+            renderCallContactOptions();
+            renderContacts();
+            renderGroups();
+            renderMeets();
+            renderCalendar();
+            updateStats();
+            checkMobileView();
+        }
+
+        function logout() {
+            saveUserData();
+            localStorage.removeItem('currentUser');
+            document.getElementById('workspaceHub').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('nameInput').value = '';
+            document.getElementById('emailInput').value = '';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('loginEmailInput').value = '';
+            document.getElementById('loginPasswordInput').value = '';
+        }
+
+        function switchSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionName + 'Section').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.add('mobile-closed');
+                document.getElementById('hamburgerBtn').textContent = '☰';
+                isMobileMenuOpen = false;
+            }
+        }
+
+        function renderCallContactOptions() {
+            const container = document.getElementById('callContactOptions');
+            container.innerHTML = '';
+            if (userContacts.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;">No contacts available for calling.</p>';
+                return;
+            }
+            userContacts.forEach(contact => {
+                const btn = document.createElement('button');
+                btn.className = 'friend-option';
+                btn.innerHTML = `${contact.avatar} ${contact.name}`;
+                btn.onclick = () => alert(`📞 Calling ${contact.name}...`);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectFriend(contact) {
+            selectedFriend = contact;
+        }
+
+        function openAddContactModal() {
+            document.getElementById('addContactModal').classList.add('active');
+            selectedContactEmoji = '👦';
+        }
+
+        function closeAddContactModal() {
+            document.getElementById('addContactModal').classList.remove('active');
+            document.getElementById('contactNameInput').value = '';
+            document.getElementById('contactEmailInput').value = '';
+        }
+
+        function selectContactEmoji(emoji) {
+            selectedContactEmoji = emoji;
+            document.querySelectorAll('#addContactModal .emoji-option').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function addContact() {
+            const name = document.getElementById('contactNameInput').value.trim();
+            if (!name) {
+                showAlert('Please enter contact name!', 'error');
+                return;
+            }
+            const createdAt = new Date().toLocaleDateString();
+            userContacts.push({
+                name, avatar: selectedContactEmoji,
+                email: document.getElementById('contactEmailInput').value.trim() || 'N/A',
+                createdAt
+            });
+            renderChatCards();
+            renderContacts();
+            renderCallContactOptions();
+            closeAddContactModal();
+            saveUserData();
+            updateStats();
+            showAlert(`✅ Contact "${name}" added successfully!`, 'success');
+        }
+
+        function renderContacts() {
+            const container = document.getElementById('contactsList');
+            container.innerHTML = '';
+            if (userContacts.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📇</div><div class="empty-state-text">No contacts yet!</div></div>';
+                return;
+            }
+            userContacts.forEach((contact, i) => {
+                const item = document.createElement('div');
+                item.className = 'contact-item';
+                item.innerHTML = `
+                    <div class="contact-info">
+                        <div class="contact-avatar">${contact.avatar}</div>
+                        <div class="contact-details">
+                            <h3>${contact.name}</h3>
+                            <p>${contact.email}</p>
+                            <div class="contact-meta">Added: ${contact.createdAt}</div>
+                        </div>
+                    </div>
+                    <div class="contact-actions">
+                        <button class="btn-call" onclick="removeContact(${i})">Remove</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function removeContact(i) {
+            const contactName = userContacts[i].name;
+            userContacts.splice(i, 1);
+            renderChatCards();
+            renderContacts();
+            renderCallContactOptions();
+            saveUserData();
+            updateStats();
+            showAlert(`Contact "${contactName}" removed.`, 'info');
+        }
+
+        function copyInviteLink() {
+            const inviteLink = document.getElementById('inviteLink');
+            inviteLink.select();
+            document.execCommand('copy');
+            const feedback = document.getElementById('copyFeedback');
+            feedback.style.display = 'block';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 2000);
+        }
+
+        function openCreateGroupModal() {
+            document.getElementById('createGroupModal').classList.add('active');
+            selectedEmoji = '👥';
+        }
+
+        function closeCreateGroupModal() {
+            document.getElementById('createGroupModal').classList.remove('active');
+            document.getElementById('groupNameInput').value = '';
+            document.getElementById('groupDescInput').value = '';
+        }
+
+        function selectEmoji(emoji) {
+            selectedEmoji = emoji;
+            document.querySelectorAll('#createGroupModal .emoji-option').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function createGroup() {
+            const name = document.getElementById('groupNameInput').value.trim();
+            if (!name) {
+                showAlert('Please enter group name!', 'error');
+                return;
+            }
+            const createdAt = new Date().toLocaleDateString();
+            userGroups.push({
+                name, emoji: selectedEmoji,
+                description: document.getElementById('groupDescInput').value.trim() || 'A group',
+                members: 1,
+                createdAt
+            });
+            renderGroups();
+            closeCreateGroupModal();
+            saveUserData();
+            updateStats();
+            showAlert(`✅ Group "${name}" created successfully!`, 'success');
+        }
+
+        function renderGroups() {
+            const container = document.getElementById('groupsContainer');
+            container.innerHTML = '';
+            if (userGroups.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No groups yet!</div></div>';
+                return;
+            }
+            userGroups.forEach((group, i) => {
+                const card = document.createElement('div');
+                card.className = 'group-card';
+                card.innerHTML = `
+                    <div class="group-icon">${group.emoji}</div>
+                    <div class="group-name">${group.name}</div>
+                    <div class="group-desc">${group.description}</div>
+                    <div class="group-count">${group.members} member${group.members > 1 ? 's' : ''}</div>
+                    <button class="btn-remove" onclick="deleteGroup(${i})">Delete</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function deleteGroup(i) {
+            const groupName = userGroups[i].name;
+            userGroups.splice(i, 1);
+            renderGroups();
+            saveUserData();
+            updateStats();
+            showAlert(`Group "${groupName}" deleted.`, 'info');
+        }
+
+        function openCreateMeetModal() {
+            document.getElementById('createMeetModal').classList.add('active');
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('meetDateInput').value = today;
+        }
+
+        function closeCreateMeetModal() {
+            document.getElementById('createMeetModal').classList.remove('active');
+            document.getElementById('meetNameInput').value = '';
+            document.getElementById('meetDateInput').value = '';
+            document.getElementById('meetTimeInput').value = '';
+            document.getElementById('meetDescInput').value = '';
+        }
+
+        function createMeet() {
+            const name = document.getElementById('meetNameInput').value.trim();
+            const date = document.getElementById('meetDateInput').value;
+            const time = document.getElementById('meetTimeInput').value;
+
+            if (!name || !date || !time) {
+                showAlert('Please fill all fields!', 'error');
+                return;
+            }
+
+            const createdAt = new Date().toLocaleDateString();
+            userMeets.push({
+                name, date, time,
+                description: document.getElementById('meetDescInput').value.trim() || 'With friends',
+                createdAt,
+                status: 'scheduled'
+            });
+            renderMeets();
+            closeCreateMeetModal();
+            saveUserData();
+            updateStats();
+            showAlert(`✅ Meet "${name}" scheduled successfully!`, 'success');
+        }
+
+        function renderMeets() {
+            const container = document.getElementById('meetsList');
+            container.innerHTML = '';
+            if (userMeets.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><div class="empty-state-text">No meets scheduled!</div></div>';
+                return;
+            }
+            userMeets.forEach((meet, i) => {
+                const item = document.createElement('div');
+                item.className = 'meet-item';
+                item.innerHTML = `
+                    <div class="meet-info">
+                        <h3>${meet.name}</h3>
+                        <p>📅 ${meet.date} at ${meet.time} • ${meet.description}</p>
+                        <div class="meet-status">${meet.status.toUpperCase()}</div>
+                    </div>
+                    <div class="contact-actions">
+                        <button class="btn-remove" onclick="deleteMeet(${i})">Delete</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function deleteMeet(i) {
+            const meetName = userMeets[i].name;
+            userMeets.splice(i, 1);
+            renderMeets();
+            saveUserData();
+            updateStats();
+            showAlert(`Meet "${meetName}" deleted.`, 'info');
+        }
+
+        function openCreateEventModal(day) {
+            selectedEventDate = day;
+            const dateStr = `${currentMonth + 1}/${day}/${currentYear}`;
+            document.getElementById('eventDateDisplay').textContent = dateStr;
+            document.getElementById('createEventModal').classList.add('active');
+            document.getElementById('eventNameInput').value = '';
+            document.getElementById('eventTimeInput').value = '';
+            selectedEventType = '📅';
+        }
+
+        function closeCreateEventModal() {
+            document.getElementById('createEventModal').classList.remove('active');
+            document.getElementById('eventNameInput').value = '';
+            document.getElementById('eventTimeInput').value = '';
+            selectedEventDate = null;
+        }
+
+        function selectEventType(emoji) {
+            selectedEventType = emoji;
+            document.querySelectorAll('#createEventModal .emoji-option').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function createEvent() {
+            const name = document.getElementById('eventNameInput').value.trim();
+            const time = document.getElementById('eventTimeInput').value;
+
+            if (!name || !time) {
+                showAlert('Please enter event name and time!', 'error');
+                return;
+            }
+
+            const dateKey = `${currentYear}-${currentMonth}-${selectedEventDate}`;
+            if (!calendarEvents[dateKey]) {
+                calendarEvents[dateKey] = [];
+            }
+
+            calendarEvents[dateKey].push({
+                name, time, emoji: selectedEventType
+            });
+
+            renderCalendar();
+            closeCreateEventModal();
+            saveUserData();
+            updateStats();
+            showAlert(`✅ Event "${name}" added to calendar!`, 'success');
+        }
+
+        function renderCalendar() {
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const today = new Date();
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            document.getElementById('monthYear').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+            
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'day-header';
+                header.textContent = day;
+                calendarGrid.appendChild(header);
+            });
+            
+            for (let i = 0; i < firstDay; i++) calendarGrid.appendChild(document.createElement('div'));
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day-cell';
+                dayCell.textContent = day;
+                dayCell.style.cursor = 'pointer';
+                
+                if (today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear) {
+                    dayCell.classList.add('today');
+                }
+                
+                const dateKey = `${currentYear}-${currentMonth}-${day}`;
+                if (calendarEvents[dateKey] && calendarEvents[dateKey].length > 0) {
+                    dayCell.classList.add('event-marked');
+                    dayCell.title = calendarEvents[dateKey].map(e => e.name).join(', ');
+                }
+                
+                dayCell.onclick = () => openCreateEventModal(day);
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        function openProfileSettings() {
+            document.getElementById('profileSettingsModal').classList.add('active');
+            updateThemeButtons();
+        }
+
+        function closeProfileSettings() {
+            document.getElementById('profileSettingsModal').classList.remove('active');
+        }
+
+        function changeProfileAvatar(emoji) {
+            currentUserAvatar = emoji;
+            document.getElementById('profileAvatar').textContent = emoji;
+            const userData = JSON.parse(localStorage.getItem('currentUser')) || {};
+            userData.avatar = emoji;
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            showAlert(`✅ Avatar changed to ${emoji}!`, 'success');
+            document.querySelectorAll('#profileSettingsModal .emoji-option').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('darkThemeBtn').style.borderColor = '#06b6d4';
+                document.getElementById('darkThemeBtn').style.color = '#06b6d4';
+                document.getElementById('lightThemeBtn').style.borderColor = '#3a4558';
+                document.getElementById('lightThemeBtn').style.color = '#a8b2c1';
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('lightThemeBtn').style.borderColor = '#0369a1';
+                document.getElementById('lightThemeBtn').style.color = '#0369a1';
+                document.getElementById('darkThemeBtn').style.borderColor = '#3a4558';
+                document.getElementById('darkThemeBtn').style.color = '#a8b2c1';
+            }
+            showAlert(`✅ Theme changed to ${theme === 'dark' ? '🌙 Dark' : '☀️ Light'}!`, 'success');
+        }
+
+        function updateThemeButtons() {
+            const isDark = document.body.classList.contains('dark-mode');
+            if (isDark) {
+                document.getElementById('darkThemeBtn').style.borderColor = '#06b6d4';
+                document.getElementById('darkThemeBtn').style.color = '#06b6d4';
+                document.getElementById('lightThemeBtn').style.borderColor = '#3a4558';
+                document.getElementById('lightThemeBtn').style.color = '#a8b2c1';
+            } else {
+                document.getElementById('lightThemeBtn').style.borderColor = '#0369a1';
+                document.getElementById('lightThemeBtn').style.color = '#0369a1';
+                document.getElementById('darkThemeBtn').style.borderColor = '#3a4558';
+                document.getElementById('darkThemeBtn').style.color = '#a8b2c1';
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            isMobileMenuOpen = !isMobileMenuOpen;
+            if (isMobileMenuOpen) {
+                sidebar.classList.remove('mobile-closed');
+                document.getElementById('hamburgerBtn').textContent = '✕';
+            } else {
+                sidebar.classList.add('mobile-closed');
+                document.getElementById('hamburgerBtn').textContent = '☰';
+            }
+        }
+
+        function checkMobileView() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('topBar').style.display = 'flex';
+                document.getElementById('sidebar').classList.add('mobile-closed');
+            } else {
+                document.getElementById('topBar').style.display = 'none';
+                document.getElementById('sidebar').classList.remove('mobile-closed');
+            }
+        }
+
+        window.onload = function() {
+            const saved = JSON.parse(localStorage.getItem('currentUser'));
+            if (saved) {
+                currentUserName = saved.name;
+                currentUserAvatar = saved.avatar;
+                currentUserEmail = saved.email;
+                loadUserData();
+                launchHubWorkspace();
+            }
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            checkMobileView();
+        };
+
+        window.addEventListener('resize', checkMobileView);
+    </script>
+</body>
+</html>
