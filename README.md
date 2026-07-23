@@ -1,70 +1,97 @@
-# GitHub Codespaces ♥️ React
+# ChatClub
 
-Welcome to your shiny new Codespace running React! We've got everything fired up and running for you to explore React.
+ChatClub is an invite-only, moderated classroom community for classmates to
+communicate in a calmer, safer space.
 
-You've got a blank canvas to work on from a git perspective as well. There's a single initial commit with the what you're seeing right now - where you go from here is up to you!
+This repository contains the Milestone 2 MVP architecture: a responsive React
+client backed by Supabase authentication, Postgres persistence, row-level
+authorization, and realtime updates. When backend credentials are absent, the app
+shows setup guidance and retains an explicitly labelled interface demo.
 
-Everything you do here is contained within this one codespace. There is no repository on GitHub yet. If and when you’re ready you can click "Publish Branch" and we’ll create your repository and push up your project. If you were just exploring then and have no further need for this code then you can simply delete your codespace and it's gone forever.
+## Product principles
 
-This project was bootstrapped for you with [Vite](https://vitejs.dev/).
+- Membership is private and invite-only.
+- A teacher or class admin moderates each classroom.
+- Members can understand the rules and reach safety controls easily.
+- Private information is never stored casually in the browser.
+- Features ship only when their security and moderation model is clear.
 
-## Available Scripts
+## Current milestone
 
-In the project directory, you can run:
+Milestone 2 adds the functional backend contract:
 
-### `npm start`
+- Email/password accounts are handled by Supabase Auth.
+- Classrooms are created by moderators and joined with hashed invitation codes.
+- Postgres row-level security limits classroom data to authorized members.
+- Class and one-to-one messages are persistent and delivered through Supabase
+  Realtime.
+- Members can mute classmates and privately report messages to moderators.
+- Announcements can only be created by moderators at the database layer.
 
-We've already run this for you in the `Codespaces: server` terminal window below. If you need to stop the server for any reason you can just run `npm start` again to bring it back online.
+The demo composer remains deliberately non-functional. Connected environments use
+the real backend.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000/](http://localhost:3000/) in the built-in Simple Browser (`Cmd/Ctrl + Shift + P > Simple Browser: Show`) to view your running application.
+## Supabase setup
 
-The page will reload automatically when you make changes.\
-You may also see any lint errors in the console.
+1. Create a Supabase project.
+2. Open the SQL editor and run
+   [`supabase/migrations/001_chatclub_mvp.sql`](supabase/migrations/001_chatclub_mvp.sql).
+   Then run
+   [`supabase/migrations/002_harden_function_permissions.sql`](supabase/migrations/002_harden_function_permissions.sql).
+3. Copy `.env.example` to `.env.local`.
+4. Add the project URL and publishable/anonymous key:
 
-### `npm test`
+   ```text
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+5. In Supabase Authentication settings, configure the local and production site
+   URLs. Keep email confirmation enabled for a real deployment.
+6. Start the app and create the first classroom. The creator receives its
+   one-time invitation code and becomes its moderator.
 
-### `npm run build`
+For GitHub Pages, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as
+repository Actions secrets. The deployment workflow injects them only while
+building the public frontend bundle.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Never put a Supabase service-role key in frontend environment variables. Only the
+publishable/anonymous key belongs in the browser; authorization is enforced by
+the migration's row-level security policies.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Local development
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Requires Node.js 20.19 or newer.
 
-## Learn More
+```bash
+npm ci
+npm start
+```
 
-You can learn more in the [Vite documentation](https://vitejs.dev/guide/).
+Open `http://localhost:3000`.
 
-To learn Vitest, a Vite-native testing framework, go to [Vitest documentation](https://vitest.dev/guide/)
+## Quality checks
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm test -- --run
+npm run build
+```
 
-### Code Splitting
+## Repository workflow
 
-This section has moved here: [https://sambitsahoo.com/blog/vite-code-splitting-that-works.html](https://sambitsahoo.com/blog/vite-code-splitting-that-works.html)
+`main` should be the source branch and GitHub Pages deployment target. Do not
+commit `dist/`; the deployment workflow builds it from source. Pull requests
+should pass tests and a production build before merging.
 
-### Analyzing the Bundle Size
+## Roadmap
 
-This section has moved here: [https://github.com/btd/rollup-plugin-visualizer#rollup-plugin-visualizer](https://github.com/btd/rollup-plugin-visualizer#rollup-plugin-visualizer)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://dev.to/hamdankhan364/simplifying-progressive-web-app-pwa-development-with-vite-a-beginners-guide-38cf](https://dev.to/hamdankhan364/simplifying-progressive-web-app-pwa-development-with-vite-a-beginners-guide-38cf)
-
-### Advanced Configuration
-
-This section has moved here: [https://vitejs.dev/guide/build.html#advanced-base-options](https://vitejs.dev/guide/build.html#advanced-base-options)
-
-### Deployment
-
-This section has moved here: [https://vitejs.dev/guide/build.html](https://vitejs.dev/guide/build.html)
-
-### Troubleshooting
-
-This section has moved here: [https://vitejs.dev/guide/troubleshooting.html](https://vitejs.dev/guide/troubleshooting.html)
+1. **Milestone 1 — Foundation:** React architecture, documentation, tests, CI,
+   responsive classroom prototype.
+2. **Milestone 2 — Functional MVP:** real authentication, invitations, classroom
+   membership, one-to-one and class chat, persistence, realtime updates, and
+   basic moderation. **Implemented; requires a configured Supabase project.**
+3. **Milestone 3 — Safety and reliability:** reporting, blocking, rate limits,
+   audit trails, observability, backups, privacy documentation, and end-to-end
+   tests.
+4. **Milestone 4 — Expansion:** group conversations, notifications, scheduling,
+   and a deliberate offline/PWA strategy.

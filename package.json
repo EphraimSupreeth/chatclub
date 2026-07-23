@@ -1,9 +1,10 @@
 {
-  "name": "codespaces-react",
-  "version": "0.1.0",
+  "name": "chatclub",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.8",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
@@ -20,7 +21,8 @@
     "start": "BROWSER=none WDS_SOCKET_PORT=0 vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "eslintConfig": {
     "extends": [
