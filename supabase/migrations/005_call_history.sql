@@ -26,14 +26,24 @@ create policy "call participants can read call history"
   on public.call_history for select to authenticated
   using (
     auth.uid() in (caller_id, recipient_id)
-    and public.is_classroom_member(classroom_id)
+    and exists (
+      select 1
+      from public.classroom_members membership
+      where membership.classroom_id = call_history.classroom_id
+        and membership.user_id = auth.uid()
+    )
   );
 
 create policy "members can create their outgoing call history"
   on public.call_history for insert to authenticated
   with check (
     caller_id = auth.uid()
-    and public.is_classroom_member(classroom_id)
+    and exists (
+      select 1
+      from public.classroom_members caller
+      where caller.classroom_id = call_history.classroom_id
+        and caller.user_id = auth.uid()
+    )
     and exists (
       select 1
       from public.classroom_members recipient
@@ -47,7 +57,12 @@ create policy "call participants can update call state"
   using (auth.uid() in (caller_id, recipient_id))
   with check (
     auth.uid() in (caller_id, recipient_id)
-    and public.is_classroom_member(classroom_id)
+    and exists (
+      select 1
+      from public.classroom_members membership
+      where membership.classroom_id = call_history.classroom_id
+        and membership.user_id = auth.uid()
+    )
   );
 
 create or replace function private.protect_call_history_identity()
