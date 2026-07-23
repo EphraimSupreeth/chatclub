@@ -873,6 +873,203 @@
   font-weight: 700;
 }
 
+.member-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.member-action--danger {
+  color: var(--danger);
+}
+
+.error-card {
+  width: min(100%, 30rem);
+  padding: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  background: white;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.error-card .brand-mark {
+  margin: 0 auto 1.5rem;
+}
+
+.error-card p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.moderation-panel {
+  overflow-y: auto;
+}
+
+.moderation-section {
+  max-width: 62rem;
+  margin-top: 1.5rem;
+  padding: 1.3rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: white;
+  box-shadow: 0 10px 30px rgb(32 48 63 / 5%);
+}
+
+.moderation-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.moderation-heading h2 {
+  margin-bottom: 0.2rem;
+  font-size: 1rem;
+}
+
+.moderation-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.report-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.report-card {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: #fafbf8;
+}
+
+.report-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.report-card blockquote {
+  margin: 0.8rem 0;
+  padding: 0.8rem;
+  border-left: 3px solid var(--peach);
+  color: var(--muted);
+  background: white;
+  font-size: 0.8rem;
+}
+
+.report-card > p {
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.report-card small {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.status-pill {
+  border-radius: 2rem;
+  padding: 0.25rem 0.55rem;
+  color: #73552c;
+  background: #f7eac6;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-pill--resolved {
+  color: #275f48;
+  background: var(--mint);
+}
+
+.status-pill--dismissed {
+  color: var(--muted);
+  background: #e9ece8;
+}
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.8rem;
+}
+
+.report-actions button,
+.compact-member-list button,
+.invite-result button {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  color: var(--ink);
+  background: white;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.compact-member-list,
+.audit-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.compact-member-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.compact-member-list span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.compact-member-list small {
+  color: var(--muted);
+}
+
+.invite-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+  padding: 0.8rem;
+  border: 1px solid #d4e5dc;
+  border-radius: 0.7rem;
+  color: #275f48;
+  background: #edf7f1;
+  letter-spacing: 0.08em;
+}
+
+.audit-list p {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.76rem;
+}
+
+.audit-list span {
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.empty-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .presence {
   color: var(--muted);
   font-size: 0.72rem;

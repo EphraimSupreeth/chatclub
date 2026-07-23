@@ -68,7 +68,13 @@ export async function createClassroom({ name, schoolName }) {
 
 export async function getClassroomData(classroomId) {
   const client = requireClient();
-  const [membersResult, messagesResult, announcementsResult, mutesResult] = await Promise.all([
+  const [
+    membersResult,
+    messagesResult,
+    announcementsResult,
+    mutesResult,
+    blocksResult,
+  ] = await Promise.all([
     client
       .from('classroom_members')
       .select('user_id, role, joined_at, profile:profiles(id, display_name, avatar_initials)')
@@ -89,6 +95,10 @@ export async function getClassroomData(classroomId) {
       .from('member_mutes')
       .select('muted_user_id')
       .eq('classroom_id', classroomId),
+    client
+      .from('member_blocks')
+      .select('blocked_user_id')
+      .eq('classroom_id', classroomId),
   ]);
 
   return {
@@ -96,6 +106,7 @@ export async function getClassroomData(classroomId) {
     messages: throwOnError(messagesResult) ?? [],
     announcements: throwOnError(announcementsResult) ?? [],
     mutedUserIds: (throwOnError(mutesResult) ?? []).map((mute) => mute.muted_user_id),
+    blockedUserIds: (throwOnError(blocksResult) ?? []).map((block) => block.blocked_user_id),
   };
 }
 
@@ -142,6 +153,71 @@ export async function muteMember({ classroomId, mutedUserId }) {
     await requireClient().from('member_mutes').upsert({
       classroom_id: classroomId,
       muted_user_id: mutedUserId,
+    }),
+  );
+}
+
+export async function blockMember({ classroomId, blockedUserId }) {
+  return throwOnError(
+    await requireClient().from('member_blocks').upsert({
+      classroom_id: classroomId,
+      blocked_user_id: blockedUserId,
+    }),
+  );
+}
+
+export async function listModeratorData(classroomId) {
+  const client = requireClient();
+  const [reportsResult, auditsResult] = await Promise.all([
+    client
+      .from('reports')
+      .select(`
+        id,
+        reason,
+        status,
+        created_at,
+        message_id,
+        reporter:profiles!reports_reporter_id_fkey(display_name),
+        message:messages(body, sender:profiles!messages_sender_id_fkey(display_name))
+      `)
+      .eq('classroom_id', classroomId)
+      .order('created_at', { ascending: false }),
+    client
+      .from('audit_events')
+      .select('id, action, created_at, metadata, actor:profiles!audit_events_actor_id_fkey(display_name)')
+      .eq('classroom_id', classroomId)
+      .order('created_at', { ascending: false })
+      .limit(50),
+  ]);
+
+  return {
+    reports: throwOnError(reportsResult) ?? [],
+    auditEvents: throwOnError(auditsResult) ?? [],
+  };
+}
+
+export async function resolveReport(reportId, resolution) {
+  return throwOnError(
+    await requireClient().rpc('resolve_report', {
+      target_report_id: reportId,
+      resolution,
+    }),
+  );
+}
+
+export async function removeClassroomMember(classroomId, userId) {
+  return throwOnError(
+    await requireClient().rpc('remove_classroom_member', {
+      target_classroom_id: classroomId,
+      target_user_id: userId,
+    }),
+  );
+}
+
+export async function rotateClassroomInvite(classroomId) {
+  return throwOnError(
+    await requireClient().rpc('rotate_classroom_invite', {
+      target_classroom_id: classroomId,
     }),
   );
 }

@@ -2,13 +2,30 @@ import Avatar from './Avatar';
 
 import { useState } from 'react';
 
-function CommunityPanel({ view, classroom, currentUserId, onMute, live = false }) {
+function CommunityPanel({
+  view,
+  classroom,
+  currentUserId,
+  onMute,
+  onBlock,
+  live = false,
+}) {
   const [status, setStatus] = useState('');
 
   async function handleMute(member) {
     try {
       await onMute(member.id);
       setStatus(`${member.name} is muted for you.`);
+    } catch (error) {
+      setStatus(error.message);
+    }
+  }
+
+  async function handleBlock(member) {
+    if (!window.confirm(`Block direct messages with ${member.name}?`)) return;
+    try {
+      await onBlock(member.id);
+      setStatus(`${member.name} is blocked. Direct messages are disabled both ways.`);
     } catch (error) {
       setStatus(error.message);
     }
@@ -52,9 +69,14 @@ function CommunityPanel({ view, classroom, currentUserId, onMute, live = false }
                 {member.online ? 'Online' : 'Offline'}
               </span>
               {live && member.id !== currentUserId && (
-                <button className="member-action" type="button" onClick={() => handleMute(member)}>
-                  Mute
-                </button>
+                <div className="member-actions">
+                  <button className="member-action" type="button" onClick={() => handleMute(member)}>
+                    Mute
+                  </button>
+                  <button className="member-action member-action--danger" type="button" onClick={() => handleBlock(member)}>
+                    Block
+                  </button>
+                </div>
               )}
             </article>
           ))}
@@ -68,8 +90,8 @@ function CommunityPanel({ view, classroom, currentUserId, onMute, live = false }
       <span className="eyebrow">Help is always available</span>
       <h1>Safety centre</h1>
       <p className="content-panel__intro">
-        Classroom rules and reporting controls will be enforced by the secure backend
-        in Milestone 2.
+        Classroom rules are backed by reporting, blocking, rate limits, and moderator
+        review.
       </p>
       <div className="safety-grid">
         <article className="content-card">

@@ -38,6 +38,8 @@ the real backend.
    [`supabase/migrations/001_chatclub_mvp.sql`](supabase/migrations/001_chatclub_mvp.sql).
    Then run
    [`supabase/migrations/002_harden_function_permissions.sql`](supabase/migrations/002_harden_function_permissions.sql).
+   Then run
+   [`supabase/migrations/003_safety_and_reliability.sql`](supabase/migrations/003_safety_and_reliability.sql).
 3. Copy `.env.example` to `.env.local`.
 4. Add the project URL and publishable/anonymous key:
 
@@ -75,6 +77,7 @@ Open `http://localhost:3000`.
 ```bash
 npm test -- --run
 npm run build
+npm run test:e2e
 ```
 
 ## Repository workflow
@@ -90,8 +93,9 @@ should pass tests and a production build before merging.
 2. **Milestone 2 — Functional MVP:** real authentication, invitations, classroom
    membership, one-to-one and class chat, persistence, realtime updates, and
    basic moderation. **Implemented; requires a configured Supabase project.**
-3. **Milestone 3 — Safety and reliability:** reporting, blocking, rate limits,
-   audit trails, observability, backups, privacy documentation, and end-to-end
-   tests.
+3. **Milestone 3 — Safety and reliability:** moderator report review, blocking,
+   database rate limits, audit trails, failure recovery, backup operations,
+   privacy documentation, and end-to-end tests. **Implemented; requires migration
+   003 and operator backup configuration.**
 4. **Milestone 4 — Expansion:** group conversations, notifications, scheduling,
    and a deliberate offline/PWA strategy.

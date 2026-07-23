@@ -1,6 +1,6 @@
 import Avatar from './Avatar';
 
-const navigation = [
+const baseNavigation = [
   { id: 'chat', label: 'Messages', icon: '✦' },
   { id: 'announcements', label: 'Announcements', icon: '◉' },
   { id: 'members', label: 'Class members', icon: '◎' },
@@ -14,6 +14,10 @@ function ClassroomSidebar({
   onSelectView,
   onLeave,
 }) {
+  const navigation =
+    currentUser.role === 'Moderator'
+      ? [...baseNavigation, { id: 'moderation', label: 'Moderation', icon: '⚑' }]
+      : baseNavigation;
   return (
     <aside className="sidebar">
       <div>

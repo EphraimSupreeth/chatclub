@@ -7,10 +7,12 @@ import {
   signOut,
   subscribeToClassroom,
   muteMember,
+  blockMember,
 } from '../services/chatclubApi';
 import ClassroomSidebar from './ClassroomSidebar';
 import ChatPanel from './ChatPanel';
 import CommunityPanel from './CommunityPanel';
+import ModeratorPanel from './ModeratorPanel';
 
 function toInitials(name = '') {
   return name
@@ -29,6 +31,7 @@ function LiveClassroom({ membership, user }) {
     messages: [],
     announcements: [],
     mutedUserIds: [],
+    blockedUserIds: [],
   });
   const [status, setStatus] = useState('Loading classroom…');
   const classroomRecord = membership.classroom;
@@ -109,7 +112,10 @@ function LiveClassroom({ membership, user }) {
 
   const visibleMessages = data.messages
     .filter((message) => {
-      if (data.mutedUserIds.includes(message.sender_id)) return false;
+      if (
+        data.mutedUserIds.includes(message.sender_id) ||
+        data.blockedUserIds.includes(message.sender_id)
+      ) return false;
       if (activeConversation.id === 'class-chat') return message.recipient_id === null;
       return (
         (message.sender_id === user.id && message.recipient_id === activeConversation.id) ||
@@ -149,6 +155,12 @@ function LiveClassroom({ membership, user }) {
     await loadData();
   }
 
+  async function handleBlock(blockedUserId) {
+    await blockMember({ classroomId: classroom.id, blockedUserId });
+    if (activeConversationId === blockedUserId) setActiveConversationId('class-chat');
+    await loadData();
+  }
+
   if (status) {
     return <main className="loading-page"><p>{status}</p></main>;
   }
@@ -173,12 +185,19 @@ function LiveClassroom({ membership, user }) {
           onSend={handleSend}
           onReport={handleReport}
         />
+      ) : activeView === 'moderation' ? (
+        <ModeratorPanel
+          classroom={classroom}
+          currentUserId={user.id}
+          onClassroomChanged={loadData}
+        />
       ) : (
         <CommunityPanel
           view={activeView}
           classroom={classroom}
           currentUserId={user.id}
           onMute={handleMute}
+          onBlock={handleBlock}
           live
         />
       )}
