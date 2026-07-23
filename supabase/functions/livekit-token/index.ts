@@ -1,13 +1,31 @@
 import { createClient } from '@supabase/supabase-js'
-import { AccessToken } from 'livekit-server-sdk'
+import { AccessToken, RoomServiceClient } from 'livekit-server-sdk'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-const liveKitUrl = Deno.env.get('LIVEKIT_URL') ?? ''
-const liveKitApiKey = Deno.env.get('LIVEKIT_API_KEY') ?? ''
-const liveKitApiSecret = Deno.env.get('LIVEKIT_API_SECRET') ?? ''
-const appOrigin = Deno.env.get('APP_ORIGIN') ?? ''
+const liveKitUrl = (Deno.env.get('LIVEKIT_URL') ?? '').trim().replace(/\/+$/, '')
+const liveKitApiKey = (Deno.env.get('LIVEKIT_API_KEY') ?? '').trim()
+const liveKitApiSecret = (Deno.env.get('LIVEKIT_API_SECRET') ?? '').trim()
+const appOrigin = (Deno.env.get('APP_ORIGIN') ?? '').trim().replace(/\/+$/, '')
+let liveKitCredentialsCheck: Promise<void> | null = null
+
+function verifyLiveKitCredentials() {
+  if (!liveKitCredentialsCheck) {
+    const httpUrl = liveKitUrl.replace(/^wss:/, 'https:')
+    const roomService = new RoomServiceClient(
+      httpUrl,
+      liveKitApiKey,
+      liveKitApiSecret,
+    )
+    liveKitCredentialsCheck = roomService.listRooms([]).then(() => undefined)
+      .catch((error) => {
+        liveKitCredentialsCheck = null
+        throw error
+      })
+  }
+  return liveKitCredentialsCheck
+}
 
 function corsHeaders(request: Request) {
   const origin = request.headers.get('origin') ?? ''
@@ -93,6 +111,22 @@ Deno.serve(async (request) => {
     }
     if (!liveKitUrl.startsWith('wss://')) {
       return response(request, { error: 'LIVEKIT_URL must begin with wss://' }, 503)
+    }
+    if (liveKitApiKey.startsWith('LIVEKIT_') || liveKitApiSecret.startsWith('LIVEKIT_')) {
+      return response(request, {
+        error: 'Enter only the LiveKit secret values, without variable names',
+      }, 503)
+    }
+
+    try {
+      await verifyLiveKitCredentials()
+    } catch (error) {
+      console.error('LiveKit credential verification failed', error)
+      return response(request, {
+        error:
+          'LiveKit URL, API key, and API secret could not be verified. ' +
+          'Copy all three again from the same LiveKit project.',
+      }, 503)
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey, {
