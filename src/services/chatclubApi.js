@@ -80,6 +80,7 @@ export async function getClassroomData(classroomId) {
     announcementsResult,
     mutesResult,
     blocksResult,
+    callsResult,
   ] = await Promise.all([
     client
       .from('classroom_members')
@@ -105,6 +106,24 @@ export async function getClassroomData(classroomId) {
       .from('member_blocks')
       .select('blocked_user_id')
       .eq('classroom_id', classroomId),
+    client
+      .from('call_history')
+      .select(`
+        id,
+        call_id,
+        caller_id,
+        recipient_id,
+        media_type,
+        status,
+        started_at,
+        answered_at,
+        ended_at,
+        caller:profiles!call_history_caller_id_fkey(display_name, avatar_initials),
+        recipient:profiles!call_history_recipient_id_fkey(display_name, avatar_initials)
+      `)
+      .eq('classroom_id', classroomId)
+      .order('started_at', { ascending: false })
+      .limit(50),
   ]);
 
   return {
@@ -113,7 +132,39 @@ export async function getClassroomData(classroomId) {
     announcements: throwOnError(announcementsResult) ?? [],
     mutedUserIds: (throwOnError(mutesResult) ?? []).map((mute) => mute.muted_user_id),
     blockedUserIds: optionalMigrationRows(blocksResult).map((block) => block.blocked_user_id),
+    calls: optionalMigrationRows(callsResult),
   };
+}
+
+export async function createCallHistory({
+  callId,
+  classroomId,
+  callerId,
+  recipientId,
+  mediaType,
+}) {
+  return throwOnError(
+    await requireClient()
+      .from('call_history')
+      .insert({
+        call_id: callId,
+        classroom_id: classroomId,
+        caller_id: callerId,
+        recipient_id: recipientId,
+        media_type: mediaType,
+      })
+      .select('id')
+      .single(),
+  );
+}
+
+export async function updateCallHistory(callId, changes) {
+  return throwOnError(
+    await requireClient()
+      .from('call_history')
+      .update(changes)
+      .eq('call_id', callId),
+  );
 }
 
 export async function sendClassMessage(classroomId, body) {
@@ -279,6 +330,16 @@ export function subscribeToClassroom(classroomId, onChange) {
         event: '*',
         schema: 'public',
         table: 'announcements',
+        filter: `classroom_id=eq.${classroomId}`,
+      },
+      onChange,
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'call_history',
         filter: `classroom_id=eq.${classroomId}`,
       },
       onChange,

@@ -26,8 +26,8 @@ Milestone 4 adds private realtime conversation signals and one-to-one calls:
   prompt delivery without treating ephemeral broadcasts as message storage.
 - Direct classmates can start private one-to-one WebRTC audio/video calls through
   LiveKit's resilient media transport.
-- Calls join with the camera off, include explicit accept/decline controls, and
-  stop local media when ended.
+- Separate audio and video actions open a permission-aware pre-call lobby.
+- Participant-only call history stores call metadata, never media or transcripts.
 - Block rules are enforced when authorizing direct Realtime channels.
 - Radix Dialog provides accessible focus and keyboard behavior for call prompts.
 
@@ -45,6 +45,8 @@ the real backend; calling is therefore not shown in the interface demo.
    [`supabase/migrations/003_safety_and_reliability.sql`](supabase/migrations/003_safety_and_reliability.sql).
    Then run
    [`supabase/migrations/004_direct_realtime_and_calls.sql`](supabase/migrations/004_direct_realtime_and_calls.sql).
+   Then run
+   [`supabase/migrations/005_call_history.sql`](supabase/migrations/005_call_history.sql).
 3. Copy `.env.example` to `.env.local`.
 4. Add the project URL and publishable/anonymous key:
 

@@ -62,7 +62,11 @@ function DeviceSelect({ label, kind, devices, selected, onChange }) {
   );
 }
 
-function DeviceSettingsFields({ call, includeJoinChoices = false }) {
+function DeviceSettingsFields({
+  call,
+  includeJoinChoices = false,
+  audioOnly = false,
+}) {
   return (
     <div className="device-fields">
       <DeviceSelect
@@ -72,13 +76,15 @@ function DeviceSettingsFields({ call, includeJoinChoices = false }) {
         selected={call.selectedDevices.audioinput}
         onChange={call.switchDevice}
       />
-      <DeviceSelect
-        label="Camera"
-        kind="videoinput"
-        devices={call.devices.videoinput}
-        selected={call.selectedDevices.videoinput}
-        onChange={call.switchDevice}
-      />
+      {!audioOnly && (
+        <DeviceSelect
+          label="Camera"
+          kind="videoinput"
+          devices={call.devices.videoinput}
+          selected={call.selectedDevices.videoinput}
+          onChange={call.switchDevice}
+        />
+      )}
       {call.speakerSelectionSupported ? (
         <DeviceSelect
           label="Speaker"
@@ -105,15 +111,17 @@ function DeviceSettingsFields({ call, includeJoinChoices = false }) {
             />
             Microphone on
           </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={call.joinWithCamera}
-              onChange={(event) =>
-                call.setJoinPreference('camera', event.target.checked)}
-            />
-            Camera on
-          </label>
+          {!audioOnly && (
+            <label>
+              <input
+                type="checkbox"
+                checked={call.joinWithCamera}
+                onChange={(event) =>
+                  call.setJoinPreference('camera', event.target.checked)}
+              />
+              Camera on
+            </label>
+          )}
         </fieldset>
       )}
     </div>
@@ -125,10 +133,12 @@ export default function CallExperience({ peerName, call, canCall }) {
   const incoming = call.status === 'incoming';
   const failed = call.status === 'failed';
   const [setupMode, setSetupMode] = useState(null);
+  const [setupMediaType, setSetupMediaType] = useState('video');
 
-  function openSetup(mode) {
+  function openSetup(mode, mediaType = 'video') {
     setSetupMode(mode);
-    void call.prepareLobby();
+    setSetupMediaType(mediaType);
+    void call.prepareLobby(mediaType);
   }
 
   function closeSetup() {
@@ -145,15 +155,26 @@ export default function CallExperience({ peerName, call, canCall }) {
 
   return (
     <>
-      <button
-        className="call-button"
-        type="button"
-        onClick={() => openSetup('outgoing')}
-        disabled={!canCall || call.status !== 'idle'}
-        aria-label={`Start an audio or video call with ${peerName}`}
-      >
-        Call
-      </button>
+      <div className="conversation-call-actions">
+        <button
+          className="call-button"
+          type="button"
+          onClick={() => openSetup('outgoing', 'audio')}
+          disabled={!canCall || call.status !== 'idle'}
+          aria-label={`Start an audio call with ${peerName}`}
+        >
+          Audio
+        </button>
+        <button
+          className="call-button"
+          type="button"
+          onClick={() => openSetup('outgoing', 'video')}
+          disabled={!canCall || call.status !== 'idle'}
+          aria-label={`Start a video call with ${peerName}`}
+        >
+          Video
+        </button>
+      </div>
 
       {['preparing', 'inviting'].includes(call.status) && (
         <div className="call-status" role="status">
@@ -182,7 +203,7 @@ export default function CallExperience({ peerName, call, canCall }) {
               <button className="button button--secondary" type="button" onClick={call.declineCall}>
                 Decline
               </button>
-              <button className="button button--primary" type="button" onClick={() => openSetup('incoming')}>
+              <button className="button button--primary" type="button" onClick={() => openSetup('incoming', call.mediaType)}>
                 Review devices
               </button>
             </div>
@@ -275,18 +296,32 @@ export default function CallExperience({ peerName, call, canCall }) {
           <Dialog.Overlay className="dialog-overlay dialog-overlay--settings" />
           <Dialog.Content className="dialog-content call-settings call-settings--lobby">
             <Dialog.Title>
-              {setupMode === 'incoming' ? `Join ${peerName}` : `Call ${peerName}`}
+              {setupMode === 'incoming'
+                ? `Join ${setupMediaType} call`
+                : `${setupMediaType === 'audio' ? 'Audio call' : 'Video call'} with ${peerName}`}
             </Dialog.Title>
             <Dialog.Description>
               Choose your devices and what to turn on. Nothing starts until you
               confirm.
             </Dialog.Description>
-            <div className="lobby-layout">
-              <LobbyPreview
-                stream={call.previewStream}
-                cameraEnabled={call.joinWithCamera}
+            <div
+              className={
+                setupMediaType === 'audio'
+                  ? 'lobby-layout lobby-layout--audio'
+                  : 'lobby-layout'
+              }
+            >
+              {setupMediaType === 'video' && (
+                <LobbyPreview
+                  stream={call.previewStream}
+                  cameraEnabled={call.joinWithCamera}
+                />
+              )}
+              <DeviceSettingsFields
+                call={call}
+                includeJoinChoices
+                audioOnly={setupMediaType === 'audio'}
               />
-              <DeviceSettingsFields call={call} includeJoinChoices />
             </div>
             {call.deviceStatus && (
               <p className="form-status" role="status">{call.deviceStatus}</p>

@@ -156,7 +156,10 @@ describe('reliable LiveKit call lifecycle', () => {
     await act(() => result.current.startCall());
     const callId = result.current.callId;
     expect(liveKit.rooms[0].connect).toHaveBeenCalledOnce();
-    expect(sendSignal).toHaveBeenCalledWith('call-invite', { callId });
+    expect(sendSignal).toHaveBeenCalledWith('call-invite', {
+      callId,
+      mediaType: 'video',
+    });
     await act(() => result.current.handleSignal('call-accept', { callId }));
 
     await waitFor(() => expect(result.current.status).toBe('connected'));

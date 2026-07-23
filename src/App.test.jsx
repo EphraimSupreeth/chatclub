@@ -20,7 +20,7 @@ describe('ChatClub classroom prototype', () => {
       screen.getByRole('heading', { name: /connect chatclub to supabase/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/run migrations/i)).toHaveTextContent('001');
-    expect(screen.getByText(/run migrations/i)).toHaveTextContent('004');
+    expect(screen.getByText(/run migrations/i)).toHaveTextContent('005');
   });
 
   test('requires a private class code before entering', () => {
@@ -60,5 +60,19 @@ describe('ChatClub classroom prototype', () => {
 
     expect(screen.getByRole('heading', { name: 'Announcements' })).toBeInTheDocument();
     expect(screen.getByText('Science project teams')).toBeInTheDocument();
+  });
+
+  test('opens the call history from primary navigation', () => {
+    render(<App />);
+    openDemo();
+
+    fireEvent.change(screen.getByLabelText(/class code/i), {
+      target: { value: 'DEMO-10A' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /enter class demo/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^calls$/i }));
+
+    expect(screen.getByRole('heading', { name: 'Calls' })).toBeInTheDocument();
+    expect(screen.getByText('No calls yet')).toBeInTheDocument();
   });
 });

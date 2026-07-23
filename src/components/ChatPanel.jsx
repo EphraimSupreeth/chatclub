@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import Avatar from './Avatar';
 import CallExperience from './CallExperience';
 
@@ -153,9 +154,48 @@ function ChatPanel({
                 canCall={canCall}
               />
             )}
-            <button className="icon-button" type="button" aria-label="Conversation information">
-              i
-            </button>
+            <Dialog.Root>
+              <Dialog.Trigger asChild>
+                <button className="icon-button" type="button" aria-label="Conversation details">
+                  i
+                </button>
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Overlay className="dialog-overlay conversation-details__overlay" />
+                <Dialog.Content className="conversation-details">
+                  <div className="conversation-details__hero">
+                    <Avatar initials={activeConversation.initials} tone="blue" />
+                    <div>
+                      <Dialog.Title>{activeConversation.name}</Dialog.Title>
+                      <Dialog.Description>
+                        {activeConversation.kind === 'direct'
+                          ? peerOnline ? 'Online now' : 'Class member'
+                          : activeConversation.detail}
+                      </Dialog.Description>
+                    </div>
+                    <Dialog.Close asChild>
+                      <button className="icon-button" type="button" aria-label="Close details">
+                        ×
+                      </button>
+                    </Dialog.Close>
+                  </div>
+                  <dl className="conversation-details__facts">
+                    <div>
+                      <dt>Access</dt>
+                      <dd>Invite-only classroom members</dd>
+                    </div>
+                    <div>
+                      <dt>Privacy</dt>
+                      <dd>Only participants can read this conversation</dd>
+                    </div>
+                    <div>
+                      <dt>Safety</dt>
+                      <dd>Use Report on a message to privately contact moderators</dd>
+                    </div>
+                  </dl>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
           </div>
         </header>
 

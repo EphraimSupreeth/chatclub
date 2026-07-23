@@ -2,11 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getLiveKitCallToken } from '../services/chatclubApi';
 
 const loadLiveKit = () => import('livekit-client');
+const ignoreCallEvent = async () => {};
 
 const initialCall = {
   status: 'idle',
   callId: null,
   incomingFrom: '',
+  mediaType: 'video',
   error: '',
 };
 const emptyDevices = {
@@ -32,6 +34,7 @@ export default function usePeerCall({
   peerName,
   classroomId,
   peerUserId,
+  onCallEvent = ignoreCallEvent,
 }) {
   const [call, setCall] = useState(initialCall);
   const [localStream, setLocalStream] = useState(null);
@@ -55,6 +58,7 @@ export default function usePeerCall({
     microphone: joinWithMicrophone,
     camera: joinWithCamera,
   });
+  const plannedMediaTypeRef = useRef('video');
 
   callRef.current = call;
   selectedDevicesRef.current = selectedDevices;
@@ -209,16 +213,19 @@ export default function usePeerCall({
   const startCall = useCallback(async () => {
     if (!classroomId || !peerUserId) return;
     const callId = newCallId();
-    setCall({ status: 'preparing', callId, incomingFrom: '', error: '' });
+    const mediaType = plannedMediaTypeRef.current;
+    setCall({ status: 'preparing', callId, incomingFrom: '', mediaType, error: '' });
     try {
+      await onCallEvent({ event: 'started', callId, mediaType }).catch(() => {});
       await connectRoom(callId);
-      setCall({ status: 'inviting', callId, incomingFrom: '', error: '' });
-      await sendSignal('call-invite', { callId });
+      setCall({ status: 'inviting', callId, incomingFrom: '', mediaType, error: '' });
+      await sendSignal('call-invite', { callId, mediaType });
     } catch (error) {
+      await onCallEvent({ event: 'failed', callId, mediaType }).catch(() => {});
       await cleanup();
-      setCall({ ...initialCall, status: 'failed', error: error.message });
+      setCall({ ...initialCall, mediaType, status: 'failed', error: error.message });
     }
-  }, [classroomId, cleanup, connectRoom, peerUserId, sendSignal]);
+  }, [classroomId, cleanup, connectRoom, onCallEvent, peerUserId, sendSignal]);
 
   const acceptCall = useCallback(async () => {
     const { callId } = callRef.current;
@@ -227,6 +234,7 @@ export default function usePeerCall({
     try {
       await connectRoom(callId);
       await sendSignal('call-accept', { callId });
+      await onCallEvent({ event: 'answered', callId }).catch(() => {});
     } catch (error) {
       await cleanup();
       setCall({ ...initialCall, status: 'failed', error: error.message });
@@ -239,7 +247,7 @@ export default function usePeerCall({
         // The recipient still receives their local authorization error.
       }
     }
-  }, [cleanup, connectRoom, sendSignal]);
+  }, [cleanup, connectRoom, onCallEvent, sendSignal]);
 
   const endCall = useCallback(async (reason = 'ended') => {
     const { callId } = callRef.current;
@@ -249,10 +257,16 @@ export default function usePeerCall({
       } catch {
         // Local media and the LiveKit room must still close if signaling is down.
       }
+      await onCallEvent({
+        event: 'ended',
+        callId,
+        reason,
+        connected: ['connected', 'reconnecting'].includes(callRef.current.status),
+      }).catch(() => {});
     }
     await cleanup();
     setCall(initialCall);
-  }, [cleanup, sendSignal]);
+  }, [cleanup, onCallEvent, sendSignal]);
 
   useEffect(() => {
     if (call.status !== 'inviting') return undefined;
@@ -273,10 +287,13 @@ export default function usePeerCall({
     const current = callRef.current;
 
     if (event === 'call-invite' && current.status === 'idle') {
+      const mediaType = payload.mediaType === 'audio' ? 'audio' : 'video';
+      plannedMediaTypeRef.current = mediaType;
       setCall({
         status: 'incoming',
         callId: payload.callId,
         incomingFrom: peerName,
+        mediaType,
         error: '',
       });
       return;
@@ -287,8 +304,13 @@ export default function usePeerCall({
       if (event === 'call-accept' && current.status === 'inviting') {
         setCall((value) => ({ ...value, status: 'connecting' }));
         await connectRoom(payload.callId);
+        await onCallEvent({ event: 'answered', callId: payload.callId }).catch(() => {});
         setCall((value) => ({ ...value, status: 'connected', error: '' }));
       } else if (event === 'call-failed') {
+        await onCallEvent({
+          event: 'failed',
+          callId: payload.callId,
+        }).catch(() => {});
         await cleanup();
         setCall({
           ...initialCall,
@@ -296,6 +318,12 @@ export default function usePeerCall({
           error: payload.message || `${peerName} could not join the call.`,
         });
       } else if (event === 'call-end') {
+        await onCallEvent({
+          event: 'ended',
+          callId: payload.callId,
+          reason: payload.reason || 'ended',
+          connected: ['connected', 'reconnecting'].includes(current.status),
+        }).catch(() => {});
         await cleanup();
         setCall(initialCall);
       }
@@ -312,7 +340,7 @@ export default function usePeerCall({
         // The local failure remains visible even if the peer is already offline.
       }
     }
-  }, [cleanup, connectRoom, peerName, sendSignal]);
+  }, [cleanup, connectRoom, onCallEvent, peerName, sendSignal]);
 
   const toggleMicrophone = useCallback(async () => {
     const room = roomRef.current;
@@ -377,6 +405,7 @@ export default function usePeerCall({
   const openPreview = useCallback(async (
     preferred = selectedDevicesRef.current,
     initializePreferences = false,
+    includeVideo = true,
   ) => {
     if (!navigator.mediaDevices?.getUserMedia) {
       throw new Error('Camera and microphone access is not supported by this browser.');
@@ -386,9 +415,11 @@ export default function usePeerCall({
       audio: preferred.audioinput
         ? { deviceId: { exact: preferred.audioinput } }
         : true,
-      video: preferred.videoinput
-        ? { deviceId: { exact: preferred.videoinput } }
-        : { facingMode: 'user' },
+      video: includeVideo
+        ? preferred.videoinput
+          ? { deviceId: { exact: preferred.videoinput } }
+          : { facingMode: 'user' }
+        : false,
     };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     const oldStream = previewStreamRef.current;
@@ -424,10 +455,26 @@ export default function usePeerCall({
     return stream;
   }, []);
 
-  const prepareLobby = useCallback(async () => {
+  const prepareLobby = useCallback(async (mediaType = 'video') => {
+    plannedMediaTypeRef.current = mediaType === 'audio' ? 'audio' : 'video';
+    setCall((current) => ({ ...current, mediaType: plannedMediaTypeRef.current }));
+    setJoinWithCamera(plannedMediaTypeRef.current === 'video');
+    mediaPreferencesRef.current = {
+      ...mediaPreferencesRef.current,
+      camera: plannedMediaTypeRef.current === 'video',
+    };
     setDeviceStatus('Allow camera and microphone access to review your devices.');
     try {
-      await openPreview(selectedDevicesRef.current, true);
+      await openPreview(
+        selectedDevicesRef.current,
+        true,
+        plannedMediaTypeRef.current === 'video',
+      );
+      if (plannedMediaTypeRef.current === 'audio') {
+        setJoinWithCamera(false);
+        const videoTrack = previewStreamRef.current?.getVideoTracks()[0];
+        if (videoTrack) videoTrack.enabled = false;
+      }
       await refreshDevices();
       setDeviceStatus('');
     } catch (error) {

@@ -12,7 +12,7 @@ function SetupScreen({ onViewDemo }) {
         </p>
         <ol>
           <li>Create a Supabase project.</li>
-          <li>Run migrations <code>001</code> through <code>004</code> in order.</li>
+          <li>Run migrations <code>001</code> through <code>005</code> in order.</li>
           <li>Copy <code>.env.example</code> to <code>.env.local</code> and add the project URL and publishable key.</li>
           <li>Restart the development server.</li>
         </ol>

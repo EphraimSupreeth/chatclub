@@ -2330,3 +2330,238 @@
     padding-inline: 1rem;
   }
 }
+
+/* Phase B: calling history and focused conversation tools. */
+.conversation-call-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.conversation-call-actions .call-button {
+  min-width: 3.5rem;
+}
+
+.lobby-layout--audio {
+  grid-template-columns: 1fr;
+}
+
+.calls-panel {
+  width: 100%;
+  max-width: none;
+  background:
+    radial-gradient(circle at 85% 8%, rgb(102 88 232 / 8%), transparent 24rem),
+    #f8f8fc;
+}
+
+.calls-panel__header {
+  max-width: 58rem;
+  margin-inline: auto;
+}
+
+.call-history-list,
+.calls-empty {
+  max-width: 58rem;
+  margin-inline: auto;
+}
+
+.call-history-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.call-history-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e6e4ee;
+  border-radius: 1rem;
+  background: white;
+  box-shadow: 0 8px 24px rgb(49 45 82 / 5%);
+}
+
+.call-history-row__copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.call-history-row__copy strong {
+  overflow: hidden;
+  color: #29273d;
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.call-history-row__status {
+  color: #77738d;
+  font-size: 0.72rem;
+  text-transform: capitalize;
+}
+
+.call-history-row__status--missed,
+.call-history-row__status--failed,
+.call-history-row__status--declined {
+  color: #a44155;
+}
+
+.call-history-row time {
+  color: #898599;
+  font-size: 0.7rem;
+}
+
+.call-history-row .button {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  color: #5149b8;
+}
+
+.calls-empty {
+  display: grid;
+  min-height: 20rem;
+  place-items: center;
+  align-content: center;
+  padding: 2rem;
+  border: 1px dashed #d9d6e8;
+  border-radius: 1.2rem;
+  color: #77738d;
+  background: rgb(255 255 255 / 65%);
+  text-align: center;
+}
+
+.calls-empty > span {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.8rem;
+  place-items: center;
+  border-radius: 1.1rem;
+  color: #5d53cf;
+  background: #e9e6ff;
+  font-size: 1.6rem;
+}
+
+.calls-empty h2 {
+  margin-bottom: 0.35rem;
+  color: #29273d;
+  font-size: 1.1rem;
+}
+
+.calls-empty p {
+  max-width: 24rem;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.conversation-details__overlay {
+  background: rgb(25 23 47 / 28%);
+}
+
+.conversation-details {
+  position: fixed;
+  z-index: 103;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(100%, 23rem);
+  padding: 1.25rem;
+  background: white;
+  box-shadow: -18px 0 60px rgb(35 31 67 / 18%);
+  animation: details-slide 180ms ease-out;
+}
+
+@keyframes details-slide {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.conversation-details__hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid #e9e8ef;
+}
+
+.conversation-details__hero h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.conversation-details__hero p {
+  margin: 0;
+  color: #77738d;
+  font-size: 0.72rem;
+}
+
+.conversation-details__facts {
+  display: grid;
+  gap: 0;
+  margin: 1rem 0;
+}
+
+.conversation-details__facts > div {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #efedf3;
+}
+
+.conversation-details__facts dt {
+  color: #827e94;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.conversation-details__facts dd {
+  margin: 0;
+  color: #343147;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .app-shell .primary-nav,
+  .app-shell .primary-nav:has(.nav-button:nth-child(5)) {
+    display: flex;
+    overflow-x: auto;
+    grid-template-columns: none;
+    scrollbar-width: none;
+  }
+
+  .app-shell .primary-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-shell .nav-button,
+  .app-shell .nav-button:not(.nav-button--active) {
+    min-width: 4.2rem;
+    flex: 1 0 4.2rem;
+  }
+
+  .call-history-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .call-history-row time {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .call-history-row .button {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .conversation-call-actions .call-button {
+    min-width: 0;
+    padding-inline: 0.65rem;
+  }
+}

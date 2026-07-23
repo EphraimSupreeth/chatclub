@@ -45,17 +45,15 @@ describe('one-to-one call experience', () => {
       <CallExperience peerName="Arjun Rao" call={call} canCall={false} />,
     );
 
-    expect(screen.getByRole('button', { name: /start an audio or video call/i }))
+    expect(screen.getByRole('button', { name: /start a video call/i }))
       .toBeDisabled();
 
     rerender(<CallExperience peerName="Arjun Rao" call={call} canCall />);
-    fireEvent.click(screen.getByRole('button', {
-      name: /start an audio or video call/i,
-    }));
+    fireEvent.click(screen.getByRole('button', { name: /start a video call/i }));
     expect(call.startCall).not.toHaveBeenCalled();
-    expect(screen.getByRole('heading', { name: 'Call Arjun Rao' }))
+    expect(screen.getByRole('heading', { name: 'Video call with Arjun Rao' }))
       .toBeInTheDocument();
-    expect(call.prepareLobby).toHaveBeenCalledOnce();
+    expect(call.prepareLobby).toHaveBeenCalledWith('video');
     fireEvent.click(screen.getByRole('button', { name: 'Start call' }));
     expect(call.startCall).toHaveBeenCalledOnce();
   });
@@ -72,6 +70,20 @@ describe('one-to-one call experience', () => {
     expect(call.prepareLobby).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole('button', { name: 'Join call' }));
     expect(call.acceptCall).toHaveBeenCalledOnce();
+  });
+
+  test('opens a microphone-only lobby for an audio call', () => {
+    const call = makeCall();
+    render(<CallExperience peerName="Arjun Rao" call={call} canCall />);
+
+    fireEvent.click(screen.getByRole('button', { name: /start an audio call/i }));
+
+    expect(call.prepareLobby).toHaveBeenCalledWith('audio');
+    expect(screen.getByRole('heading', {
+      name: 'Audio call with Arjun Rao',
+    })).toBeInTheDocument();
+    expect(screen.getByLabelText('Microphone')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Camera')).not.toBeInTheDocument();
   });
 
   test('shows a safe close-only screen after connection failure', () => {

@@ -8,6 +8,7 @@ import AuthenticatedApp from './components/AuthenticatedApp';
 import ClassroomSidebar from './components/ClassroomSidebar';
 import ChatPanel from './components/ChatPanel';
 import CommunityPanel from './components/CommunityPanel';
+import CallsPanel from './components/CallsPanel';
 import JoinScreen from './components/JoinScreen';
 import SetupScreen from './components/SetupScreen';
 
@@ -39,6 +40,15 @@ function DemoApp() {
           activeConversation={activeConversation}
           messages={messages[activeConversation.id] ?? []}
           onSelectConversation={setActiveConversationId}
+        />
+      ) : activeView === 'calls' ? (
+        <CallsPanel
+          calls={[]}
+          currentUserId={currentUser.id}
+          onOpenConversation={(peerId) => {
+            setActiveConversationId(peerId);
+            setActiveView('chat');
+          }}
         />
       ) : (
         <CommunityPanel view={activeView} classroom={classroom} />

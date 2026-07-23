@@ -8,6 +8,8 @@ import {
   subscribeToClassroom,
   muteMember,
   blockMember,
+  createCallHistory,
+  updateCallHistory,
 } from '../services/chatclubApi';
 import ClassroomSidebar from './ClassroomSidebar';
 import ChatPanel from './ChatPanel';
@@ -15,6 +17,7 @@ import CommunityPanel from './CommunityPanel';
 import ModeratorPanel from './ModeratorPanel';
 import useDirectRealtime from '../hooks/useDirectRealtime';
 import usePeerCall from '../hooks/usePeerCall';
+import CallsPanel from './CallsPanel';
 
 function toInitials(name = '') {
   return name
@@ -34,6 +37,7 @@ function LiveClassroom({ membership, user }) {
     announcements: [],
     mutedUserIds: [],
     blockedUserIds: [],
+    calls: [],
   });
   const [status, setStatus] = useState('Loading classroom…');
   const signalSenderRef = useRef(() =>
@@ -121,11 +125,48 @@ function LiveClassroom({ membership, user }) {
     (event, payload) => signalSenderRef.current(event, payload),
     [],
   );
+  const handleCallEvent = useCallback(async ({
+    event,
+    callId,
+    mediaType,
+    reason,
+    connected,
+  }) => {
+    if (event === 'started') {
+      await createCallHistory({
+        callId,
+        classroomId: classroom.id,
+        callerId: user.id,
+        recipientId: activePeerId,
+        mediaType,
+      });
+    } else if (event === 'answered') {
+      await updateCallHistory(callId, { answered_at: new Date().toISOString() });
+    } else {
+      const terminalStatus = event === 'failed'
+        ? 'failed'
+        : connected
+          ? 'completed'
+          : reason === 'unanswered'
+            ? 'missed'
+            : reason === 'declined'
+              ? 'declined'
+              : reason === 'cancelled'
+                ? 'cancelled'
+                : 'failed';
+      await updateCallHistory(callId, {
+        status: terminalStatus,
+        ended_at: new Date().toISOString(),
+      });
+    }
+    await loadData();
+  }, [activePeerId, classroom.id, loadData, user.id]);
   const call = usePeerCall({
     sendSignal,
     peerName: activeConversation?.name ?? 'Class member',
     classroomId: classroom.id,
     peerUserId: activePeerId,
+    onCallEvent: handleCallEvent,
   });
   const directRealtime = useDirectRealtime({
     classroomId: classroom.id,
@@ -227,6 +268,15 @@ function LiveClassroom({ membership, user }) {
           onSend={handleSend}
           onReport={handleReport}
           onTyping={(active) => directRealtime.send('typing', { active })}
+        />
+      ) : activeView === 'calls' ? (
+        <CallsPanel
+          calls={data.calls}
+          currentUserId={user.id}
+          onOpenConversation={(peerId) => {
+            setActiveConversationId(peerId);
+            setActiveView('chat');
+          }}
         />
       ) : activeView === 'moderation' ? (
         <ModeratorPanel
