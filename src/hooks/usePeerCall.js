@@ -35,6 +35,7 @@ export default function usePeerCall({
 }) {
   const [call, setCall] = useState(initialCall);
   const [localStream, setLocalStream] = useState(null);
+  const [previewStream, setPreviewStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
@@ -45,6 +46,7 @@ export default function usePeerCall({
   const [joinWithMicrophone, setJoinWithMicrophone] = useState(false);
   const [joinWithCamera, setJoinWithCamera] = useState(false);
   const roomRef = useRef(null);
+  const previewStreamRef = useRef(null);
   const roomPromiseRef = useRef(null);
   const lifecycleRef = useRef(0);
   const callRef = useRef(call);
@@ -61,8 +63,15 @@ export default function usePeerCall({
     camera: joinWithCamera,
   };
 
+  const stopPreview = useCallback(() => {
+    previewStreamRef.current?.getTracks().forEach((track) => track.stop());
+    previewStreamRef.current = null;
+    setPreviewStream(null);
+  }, []);
+
   const cleanup = useCallback(async () => {
     lifecycleRef.current += 1;
+    stopPreview();
     const room = roomRef.current;
     roomRef.current = null;
     roomPromiseRef.current = null;
@@ -73,7 +82,7 @@ export default function usePeerCall({
     setMicrophoneEnabled(false);
     setAudioBlocked(false);
     setDeviceStatus('');
-  }, []);
+  }, [stopPreview]);
 
   useEffect(() => () => {
     void cleanup();
@@ -83,6 +92,7 @@ export default function usePeerCall({
     if (roomRef.current) return roomRef.current;
     if (roomPromiseRef.current) return roomPromiseRef.current;
 
+    stopPreview();
     const lifecycle = lifecycleRef.current;
     roomPromiseRef.current = (async () => {
       const { token, url } = await getLiveKitCallToken({
@@ -194,7 +204,7 @@ export default function usePeerCall({
     } finally {
       roomPromiseRef.current = null;
     }
-  }, [classroomId, peerUserId]);
+  }, [classroomId, cleanup, peerName, peerUserId, stopPreview]);
 
   const startCall = useCallback(async () => {
     if (!classroomId || !peerUserId) return;
@@ -364,11 +374,99 @@ export default function usePeerCall({
     }
   }, []);
 
+  const openPreview = useCallback(async (
+    preferred = selectedDevicesRef.current,
+    initializePreferences = false,
+  ) => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error('Camera and microphone access is not supported by this browser.');
+    }
+
+    const constraints = {
+      audio: preferred.audioinput
+        ? { deviceId: { exact: preferred.audioinput } }
+        : true,
+      video: preferred.videoinput
+        ? { deviceId: { exact: preferred.videoinput } }
+        : { facingMode: 'user' },
+    };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const oldStream = previewStreamRef.current;
+    previewStreamRef.current = stream;
+    setPreviewStream(stream);
+    oldStream?.getTracks().forEach((track) => track.stop());
+
+    const audioTrack = stream.getAudioTracks()[0];
+    const videoTrack = stream.getVideoTracks()[0];
+    const microphone = initializePreferences
+      ? Boolean(audioTrack)
+      : mediaPreferencesRef.current.microphone;
+    const camera = initializePreferences
+      ? Boolean(videoTrack)
+      : mediaPreferencesRef.current.camera;
+    setJoinWithMicrophone(microphone);
+    setJoinWithCamera(camera);
+    if (audioTrack) audioTrack.enabled = microphone;
+    if (videoTrack) videoTrack.enabled = camera;
+    const nextSelectedDevices = {
+      ...selectedDevicesRef.current,
+      audioinput:
+        audioTrack?.getSettings().deviceId ||
+        selectedDevicesRef.current.audioinput ||
+        '',
+      videoinput:
+        videoTrack?.getSettings().deviceId ||
+        selectedDevicesRef.current.videoinput ||
+        '',
+    };
+    selectedDevicesRef.current = nextSelectedDevices;
+    setSelectedDevices(nextSelectedDevices);
+    return stream;
+  }, []);
+
+  const prepareLobby = useCallback(async () => {
+    setDeviceStatus('Allow camera and microphone access to review your devices.');
+    try {
+      await openPreview(selectedDevicesRef.current, true);
+      await refreshDevices();
+      setDeviceStatus('');
+    } catch (error) {
+      stopPreview();
+      setJoinWithMicrophone(false);
+      setJoinWithCamera(false);
+      if (error.name === 'NotAllowedError') {
+        setDeviceStatus(
+          'Camera and microphone access was blocked. Allow access in your browser, then try again.',
+        );
+      } else if (error.name === 'NotFoundError') {
+        setDeviceStatus('No camera or microphone was found.');
+      } else {
+        setDeviceStatus(error.message);
+      }
+      await refreshDevices();
+    }
+  }, [openPreview, refreshDevices, stopPreview]);
+
   const switchDevice = useCallback(async (kind, deviceId) => {
     const room = roomRef.current;
     if (!deviceId) return;
     if (!room) {
       setSelectedDevices((current) => ({ ...current, [kind]: deviceId }));
+      if (previewStreamRef.current && kind !== 'audiooutput') {
+        setDeviceStatus('Switching device…');
+        try {
+          await openPreview(
+            {
+              ...selectedDevicesRef.current,
+              [kind]: deviceId,
+            },
+            false,
+          );
+          setDeviceStatus('');
+        } catch (error) {
+          setDeviceStatus(`Could not switch device: ${error.message}`);
+        }
+      }
       return;
     }
     setDeviceStatus('Switching device…');
@@ -379,16 +477,25 @@ export default function usePeerCall({
     } catch (error) {
       setDeviceStatus(error.message);
     }
-  }, []);
+  }, [openPreview]);
 
   const setJoinPreference = useCallback((kind, enabled) => {
-    if (kind === 'microphone') setJoinWithMicrophone(enabled);
-    if (kind === 'camera') setJoinWithCamera(enabled);
+    if (kind === 'microphone') {
+      setJoinWithMicrophone(enabled);
+      const track = previewStreamRef.current?.getAudioTracks()[0];
+      if (track) track.enabled = enabled;
+    }
+    if (kind === 'camera') {
+      setJoinWithCamera(enabled);
+      const track = previewStreamRef.current?.getVideoTracks()[0];
+      if (track) track.enabled = enabled;
+    }
   }, []);
 
   return {
     ...call,
     localStream,
+    previewStream,
     remoteStream,
     cameraEnabled,
     microphoneEnabled,
@@ -412,6 +519,8 @@ export default function usePeerCall({
     toggleMicrophone,
     resumeAudio,
     refreshDevices,
+    prepareLobby,
+    cancelLobby: stopPreview,
     switchDevice,
     setJoinPreference,
   };

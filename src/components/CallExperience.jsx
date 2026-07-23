@@ -16,6 +16,29 @@ function Video({ stream, muted, label }) {
   );
 }
 
+function LobbyPreview({ stream, cameraEnabled }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) ref.current.srcObject = stream ?? null;
+  }, [stream]);
+
+  return (
+    <div className="lobby-preview">
+      <video ref={ref} autoPlay playsInline muted />
+      {!stream && (
+        <div className="lobby-preview__placeholder">
+          Allow camera access to see your preview
+        </div>
+      )}
+      {stream && !cameraEnabled && (
+        <div className="lobby-preview__placeholder">Camera is off</div>
+      )}
+      <span>You</span>
+    </div>
+  );
+}
+
 function DeviceSelect({ label, kind, devices, selected, onChange }) {
   return (
     <label className="device-field">
@@ -105,7 +128,12 @@ export default function CallExperience({ peerName, call, canCall }) {
 
   function openSetup(mode) {
     setSetupMode(mode);
-    void call.refreshDevices();
+    void call.prepareLobby();
+  }
+
+  function closeSetup() {
+    call.cancelLobby();
+    setSetupMode(null);
   }
 
   async function confirmSetup() {
@@ -240,12 +268,12 @@ export default function CallExperience({ peerName, call, canCall }) {
       <Dialog.Root
         open={Boolean(setupMode)}
         onOpenChange={(open) => {
-          if (!open) setSetupMode(null);
+          if (!open) closeSetup();
         }}
       >
         <Dialog.Portal>
           <Dialog.Overlay className="dialog-overlay dialog-overlay--settings" />
-          <Dialog.Content className="dialog-content call-settings">
+          <Dialog.Content className="dialog-content call-settings call-settings--lobby">
             <Dialog.Title>
               {setupMode === 'incoming' ? `Join ${peerName}` : `Call ${peerName}`}
             </Dialog.Title>
@@ -253,7 +281,13 @@ export default function CallExperience({ peerName, call, canCall }) {
               Choose your devices and what to turn on. Nothing starts until you
               confirm.
             </Dialog.Description>
-            <DeviceSettingsFields call={call} includeJoinChoices />
+            <div className="lobby-layout">
+              <LobbyPreview
+                stream={call.previewStream}
+                cameraEnabled={call.joinWithCamera}
+              />
+              <DeviceSettingsFields call={call} includeJoinChoices />
+            </div>
             {call.deviceStatus && (
               <p className="form-status" role="status">{call.deviceStatus}</p>
             )}
@@ -261,7 +295,7 @@ export default function CallExperience({ peerName, call, canCall }) {
               <button
                 className="button button--secondary"
                 type="button"
-                onClick={() => setSetupMode(null)}
+                onClick={closeSetup}
               >
                 Back
               </button>

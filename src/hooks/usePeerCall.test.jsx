@@ -109,6 +109,9 @@ describe('reliable LiveKit call lifecycle', () => {
       constructor(tracks = []) {
         this.tracks = tracks;
       }
+      getTracks() {
+        return this.tracks;
+      }
     };
   });
 
@@ -229,5 +232,50 @@ describe('reliable LiveKit call lifecycle', () => {
       .toHaveBeenCalledWith(true);
     expect(liveKit.rooms[0].localParticipant.setCameraEnabled)
       .toHaveBeenCalledWith(true);
+  });
+
+  test('gets permission and exposes a labeled local preview before calling', async () => {
+    const audioTrack = {
+      enabled: true,
+      stop: vi.fn(),
+      getSettings: () => ({ deviceId: 'mic-2' }),
+    };
+    const videoTrack = {
+      enabled: true,
+      stop: vi.fn(),
+      getSettings: () => ({ deviceId: 'camera-1' }),
+    };
+    const preview = {
+      getTracks: () => [audioTrack, videoTrack],
+      getAudioTracks: () => [audioTrack],
+      getVideoTracks: () => [videoTrack],
+    };
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: vi.fn(async () => preview),
+      },
+    });
+    const sendSignal = vi.fn(async () => 'ok');
+    const { result } = renderHook(() =>
+      usePeerCall({ ...hookProps, sendSignal }),
+    );
+
+    await act(() => result.current.prepareLobby());
+
+    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
+      audio: true,
+      video: { facingMode: 'user' },
+    });
+    expect(result.current.previewStream).toBe(preview);
+    expect(result.current.selectedDevices.audioinput).toBe('mic-2');
+    expect(result.current.devices.audioinput[1].label).toBe('USB microphone');
+    expect(result.current.joinWithMicrophone).toBe(true);
+    expect(result.current.joinWithCamera).toBe(true);
+    expect(sendSignal).not.toHaveBeenCalled();
+
+    act(() => result.current.cancelLobby());
+    expect(audioTrack.stop).toHaveBeenCalledOnce();
+    expect(videoTrack.stop).toHaveBeenCalledOnce();
   });
 });

@@ -124,9 +124,11 @@ deployment must explicitly enable TURN/TLS and expose the required ports.
 1. Sign in as two members of the same classroom on separate devices.
 2. Open the same direct conversation on both devices and confirm it shows
    `Live`.
-3. Select **Call**, review the pre-call device lobby, and explicitly choose
-   whether the microphone and camera should start on. Repeat when accepting the
-   incoming call.
+3. Select **Call** and approve the browser's one-time camera and microphone
+   prompt. The pre-call lobby should immediately show a local preview and the
+   real device names. Choose whether the microphone and camera should start on.
+   No invitation is sent until **Start call** is selected. Repeat when accepting
+   the incoming call.
 4. Verify two-way audio, then enable and disable each camera.
 5. Open **Settings** and switch between available microphones and cameras.
    Speaker selection appears only on browsers that support audio-output routing;

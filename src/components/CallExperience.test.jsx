@@ -7,6 +7,7 @@ function makeCall(overrides = {}) {
     status: 'idle',
     error: '',
     localStream: null,
+    previewStream: null,
     remoteStream: null,
     cameraEnabled: false,
     microphoneEnabled: true,
@@ -28,6 +29,8 @@ function makeCall(overrides = {}) {
     toggleCamera: vi.fn(),
     toggleMicrophone: vi.fn(),
     refreshDevices: vi.fn(async () => {}),
+    prepareLobby: vi.fn(async () => {}),
+    cancelLobby: vi.fn(),
     switchDevice: vi.fn(async () => {}),
     resumeAudio: vi.fn(async () => {}),
     setJoinPreference: vi.fn(),
@@ -52,6 +55,7 @@ describe('one-to-one call experience', () => {
     expect(call.startCall).not.toHaveBeenCalled();
     expect(screen.getByRole('heading', { name: 'Call Arjun Rao' }))
       .toBeInTheDocument();
+    expect(call.prepareLobby).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole('button', { name: 'Start call' }));
     expect(call.startCall).toHaveBeenCalledOnce();
   });
@@ -65,6 +69,7 @@ describe('one-to-one call experience', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /review devices/i }));
     expect(call.acceptCall).not.toHaveBeenCalled();
+    expect(call.prepareLobby).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole('button', { name: 'Join call' }));
     expect(call.acceptCall).toHaveBeenCalledOnce();
   });
