@@ -43,7 +43,7 @@ describe('ChatClub classroom prototype', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /enter class demo/i }));
 
-    expect(screen.getByRole('heading', { name: 'Messages' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Chats' })).toBeInTheDocument();
     expect(screen.getByText(/remember our class agreement/i)).toBeInTheDocument();
     expect(screen.getByText('Ms. Fernandes')).toBeInTheDocument();
   });
@@ -56,7 +56,7 @@ describe('ChatClub classroom prototype', () => {
       target: { value: 'DEMO-10A' },
     });
     fireEvent.click(screen.getByRole('button', { name: /enter class demo/i }));
-    fireEvent.click(screen.getByRole('button', { name: /announcements/i }));
+    fireEvent.click(screen.getByRole('button', { name: /updates/i }));
 
     expect(screen.getByRole('heading', { name: 'Announcements' })).toBeInTheDocument();
     expect(screen.getByText('Science project teams')).toBeInTheDocument();

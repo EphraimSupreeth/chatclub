@@ -8,14 +8,14 @@ test('opens the moderated classroom demo and safety centre', async ({ page }) =>
   await page.getByLabel('Class code').fill('DEMO-10A');
   await page.getByRole('button', { name: 'Enter class demo' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Chats' })).toBeVisible();
   await expect(page.getByText('Remember our class agreement:')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Safety centre' }).click();
+  await page.getByRole('button', { name: 'Safety' }).click();
   await expect(page.getByRole('heading', { name: 'Safety centre' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Report a concern' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Return to ChatClub messages' }).click();
-  await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Chats' })).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
 });

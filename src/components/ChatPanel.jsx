@@ -83,10 +83,19 @@ function ChatPanel({
   return (
     <section className="chat-layout" aria-label="Messages">
       <aside className="conversation-list">
+        <div className="conversation-list__context">
+          <span className="conversation-list__class-mark">
+            {classroom.name.slice(0, 2).toUpperCase()}
+          </span>
+          <span>
+            <strong>{classroom.name}</strong>
+            <small>{classroom.school}</small>
+          </span>
+        </div>
         <div className="conversation-list__header">
-          <span className="eyebrow">Classroom</span>
-          <h1>Messages</h1>
-          <p>Private conversations with your class.</p>
+          <span className="eyebrow">Your conversations</span>
+          <h1>Chats</h1>
+          <p>Pick up where you left off.</p>
         </div>
         <div className="conversation-items">
           {conversations.map((conversation, index) => (

@@ -1,10 +1,26 @@
 import Avatar from './Avatar';
 
+function RailIcon({ name }) {
+  const icons = {
+    chat: 'M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-4.5A2.5 2.5 0 0 1 4 12.5z',
+    announcements: 'M4 11h3l9-5v12l-9-5H4z M7 13l1 6h3l-1-5',
+    members: 'M16 19v-1.5A3.5 3.5 0 0 0 12.5 14h-5A3.5 3.5 0 0 0 4 17.5V19 M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M17 7a2.5 2.5 0 0 1 0 5 M18 14a3 3 0 0 1 2 3v2',
+    safety: 'M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6z M9 12l2 2 4-5',
+    moderation: 'M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6z M12 8v5 M12 16h.01',
+  };
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d={icons[name]} />
+    </svg>
+  );
+}
+
 const baseNavigation = [
-  { id: 'chat', label: 'Messages', icon: '✦' },
-  { id: 'announcements', label: 'Announcements', icon: '◉' },
-  { id: 'members', label: 'Class members', icon: '◎' },
-  { id: 'safety', label: 'Safety centre', icon: '◇' },
+  { id: 'chat', label: 'Chat' },
+  { id: 'announcements', label: 'Updates' },
+  { id: 'members', label: 'People' },
+  { id: 'safety', label: 'Safety' },
 ];
 
 function ClassroomSidebar({
@@ -16,11 +32,11 @@ function ClassroomSidebar({
 }) {
   const navigation =
     currentUser.role === 'Moderator'
-      ? [...baseNavigation, { id: 'moderation', label: 'Moderation', icon: '⚑' }]
+      ? [...baseNavigation, { id: 'moderation', label: 'Moderation' }]
       : baseNavigation;
   return (
-    <aside className="sidebar">
-      <div>
+    <aside className="sidebar app-rail">
+      <div className="app-rail__main">
         <button
           className="brand brand--inverse sidebar-brand"
           type="button"
@@ -30,11 +46,6 @@ function ClassroomSidebar({
           <span className="brand-mark">C</span>
           <span>ChatClub</span>
         </button>
-        <div className="class-summary">
-          <span className="class-summary__label">Your classroom</span>
-          <strong>{classroom.name}</strong>
-          <span>{classroom.school}</span>
-        </div>
         <nav className="primary-nav" aria-label="Classroom">
           {navigation.map((item) => (
             <button
@@ -42,20 +53,23 @@ function ClassroomSidebar({
               key={item.id}
               type="button"
               onClick={() => onSelectView(item.id)}
+              title={item.label}
             >
-              <span aria-hidden="true">{item.icon}</span>
-              {item.label}
+              <span className="nav-button__icon"><RailIcon name={item.id} /></span>
+              <span className="nav-button__label">{item.label}</span>
             </button>
           ))}
         </nav>
       </div>
       <div className="sidebar-profile">
         <Avatar initials={currentUser.initials} tone="mint" size="small" />
-        <span>
+        <span className="sidebar-profile__copy">
           <strong>{currentUser.name}</strong>
           <small>{currentUser.role}</small>
         </span>
-        <button type="button" onClick={onLeave} aria-label="Leave demo">↗</button>
+        <button type="button" onClick={onLeave} aria-label="Sign out" title="Sign out">
+          ↗
+        </button>
       </div>
     </aside>
   );
