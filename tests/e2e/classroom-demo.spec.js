@@ -14,4 +14,8 @@ test('opens the moderated classroom demo and safety centre', async ({ page }) =>
   await page.getByRole('button', { name: 'Safety centre' }).click();
   await expect(page.getByRole('heading', { name: 'Safety centre' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Report a concern' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Return to ChatClub messages' }).click();
+  await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
 });

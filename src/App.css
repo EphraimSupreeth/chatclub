@@ -925,6 +925,385 @@
   }
 }
 
+/* Teen community refresh: bright, social, and calm enough for long chats. */
+.app-shell {
+  --community-purple: #6658e8;
+  --community-purple-deep: #4f46c7;
+  --community-lilac: #f0efff;
+  --community-coral: #ff7b72;
+  --community-aqua: #56cfc1;
+  grid-template-columns: 14.5rem minmax(0, 1fr);
+  color: #25243a;
+  background:
+    radial-gradient(circle at 88% 4%, rgb(102 88 232 / 8%), transparent 24rem),
+    #f7f7fb;
+}
+
+.app-shell .sidebar {
+  position: relative;
+  overflow: hidden;
+  padding: 1.4rem 1rem 1.1rem;
+  background:
+    radial-gradient(circle at -15% 0%, rgb(86 207 193 / 28%), transparent 13rem),
+    linear-gradient(180deg, #242044 0%, #19172f 100%);
+}
+
+.app-shell .sidebar::after {
+  position: absolute;
+  right: -4.5rem;
+  bottom: 12%;
+  width: 9rem;
+  height: 9rem;
+  border: 1.5rem solid rgb(255 255 255 / 3%);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+.sidebar-brand {
+  position: relative;
+  z-index: 1;
+  border: 0;
+  padding: 0.25rem 0.45rem !important;
+  background: transparent;
+  cursor: pointer;
+}
+
+.app-shell .brand-mark {
+  border-radius: 0.8rem;
+  background: linear-gradient(145deg, #7b6df5, #4e79e8);
+  box-shadow: 0 8px 20px rgb(65 55 170 / 32%);
+}
+
+.app-shell .class-summary {
+  position: relative;
+  z-index: 1;
+  margin: 1.65rem 0 1.25rem;
+  border-color: rgb(255 255 255 / 12%);
+  border-radius: 1.1rem;
+  background: rgb(255 255 255 / 8%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+
+.app-shell .class-summary__label {
+  color: #bbb7dc;
+}
+
+.app-shell .class-summary > span:last-child {
+  color: #c7c4dc;
+}
+
+.app-shell .primary-nav {
+  position: relative;
+  z-index: 1;
+  gap: 0.4rem;
+}
+
+.app-shell .nav-button {
+  min-height: 2.85rem;
+  border-radius: 0.9rem;
+  color: #c9c6df;
+  transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.app-shell .nav-button:hover {
+  color: white;
+  background: rgb(255 255 255 / 8%);
+  transform: translateX(2px);
+}
+
+.app-shell .nav-button--active {
+  color: white;
+  background: linear-gradient(90deg, rgb(102 88 232 / 48%), rgb(102 88 232 / 18%));
+  box-shadow: inset 3px 0 0 #7ce1d4;
+}
+
+.app-shell .sidebar-profile {
+  position: relative;
+  z-index: 1;
+  border-color: rgb(255 255 255 / 10%);
+}
+
+.app-shell .chat-layout {
+  grid-template-columns: 20rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.app-shell .conversation-list {
+  border-color: #e7e6ef;
+  background: rgb(251 251 254 / 92%);
+}
+
+.app-shell .conversation-list__header {
+  padding: 2rem 1.35rem 1.2rem;
+}
+
+.app-shell .conversation-list__header .eyebrow {
+  margin-bottom: 0.6rem;
+  color: var(--community-purple);
+}
+
+.app-shell .conversation-list__header h1 {
+  color: #242238;
+  font-size: 2rem;
+}
+
+.app-shell .conversation-items {
+  gap: 0.45rem;
+  padding-inline: 0.7rem;
+}
+
+.app-shell .conversation-card {
+  min-height: 4.5rem;
+  border: 1px solid transparent;
+  border-radius: 1.1rem;
+  padding: 0.78rem;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.app-shell .conversation-card:hover {
+  border-color: #e8e5fb;
+  background: #f6f4ff;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.app-shell .conversation-card--active {
+  border-color: #dfdcff;
+  background: linear-gradient(115deg, #f0efff, #faf9ff);
+  box-shadow: 0 9px 24px rgb(83 70 183 / 9%);
+}
+
+.app-shell .conversation-card--active::after {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--community-aqua);
+  content: '';
+}
+
+.app-shell .avatar {
+  border-radius: 1rem;
+}
+
+.app-shell .moderation-note {
+  border-color: #d9eee9;
+  border-radius: 1rem;
+  color: #37685f;
+  background: #effaf7;
+}
+
+.app-shell .message-panel {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 100% 10%, rgb(102 88 232 / 5%), transparent 20rem),
+    #fff;
+}
+
+.app-shell .message-header {
+  min-height: 5.25rem;
+  padding: 1rem clamp(1.2rem, 3vw, 2rem);
+  border-color: #e9e8ef;
+  background: rgb(255 255 255 / 88%);
+  backdrop-filter: blur(14px);
+}
+
+.app-shell .message-header h2 {
+  color: #25233a;
+  font-size: 1.08rem;
+}
+
+.app-shell .message-header p {
+  color: #77738d;
+}
+
+.app-shell .call-button {
+  border-color: transparent;
+  padding: 0.55rem 0.9rem;
+  color: white;
+  background: var(--community-purple);
+  box-shadow: 0 7px 16px rgb(102 88 232 / 20%);
+}
+
+.app-shell .call-button:hover:not(:disabled) {
+  background: var(--community-purple-deep);
+}
+
+.app-shell .icon-button {
+  border-color: #e1dff0;
+  color: #5d5875;
+  background: #f7f6fc;
+}
+
+.app-shell .classroom-reminder {
+  max-width: 58rem;
+  margin: 1rem auto 0;
+  border: 1px solid #f4e4b4;
+  border-radius: 1rem;
+  color: #6f5727;
+  background: linear-gradient(90deg, #fff8df, #fffaf0);
+}
+
+.app-shell .message-stream {
+  width: 100%;
+  max-width: 62rem;
+  margin-inline: auto;
+  padding: 1.2rem clamp(1.25rem, 4vw, 3rem) 2rem;
+}
+
+.app-shell .date-divider {
+  color: #9b98aa;
+}
+
+.app-shell .message {
+  margin-block: 1.15rem;
+}
+
+.app-shell .message__bubble {
+  border: 1px solid #ecebf0;
+  border-radius: 0.45rem 1.15rem 1.15rem;
+  padding: 0.78rem 1rem;
+  color: #353347;
+  background: #f5f5f8;
+}
+
+.app-shell .message--own .message__bubble {
+  border-color: transparent;
+  border-radius: 1.15rem 0.45rem 1.15rem 1.15rem;
+  background: linear-gradient(135deg, var(--community-purple), #526fe2);
+  box-shadow: 0 8px 18px rgb(86 75 190 / 14%);
+}
+
+.app-shell .message__meta span {
+  color: #337267;
+  background: #dff6f1;
+}
+
+.app-shell .composer {
+  padding: 0.9rem clamp(1rem, 3vw, 2rem) 1.1rem;
+  border-color: #e9e8ef;
+  background: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(14px);
+}
+
+.app-shell .composer__row {
+  max-width: 62rem;
+  margin-inline: auto;
+  gap: 0.7rem;
+}
+
+.app-shell .composer__row input {
+  border-color: #e3e1eb;
+  border-radius: 1rem;
+  background: #f7f7fa;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.app-shell .composer__row input:focus {
+  border-color: #aaa2f2;
+  outline: 0;
+  background: white;
+  box-shadow: 0 0 0 4px rgb(102 88 232 / 10%);
+}
+
+.app-shell .attach-button {
+  border-radius: 1rem;
+  color: #827d98;
+  background: #f1f0f6;
+}
+
+.app-shell .send-button {
+  border-radius: 1rem;
+  background: var(--community-purple);
+  box-shadow: 0 8px 18px rgb(102 88 232 / 18%);
+}
+
+.app-shell .composer > small {
+  max-width: 58.5rem;
+  margin-inline: auto;
+  padding-left: 3.5rem;
+}
+
+@media (max-width: 1060px) and (min-width: 681px) {
+  .app-shell {
+    grid-template-columns: 4.7rem minmax(0, 1fr);
+  }
+
+  .app-shell .chat-layout {
+    grid-template-columns: 16rem minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .app-shell {
+    display: block;
+    padding-bottom: 4.8rem;
+  }
+
+  .app-shell .sidebar {
+    min-height: 0;
+    padding: 0.5rem;
+    background: rgb(31 28 58 / 96%);
+    backdrop-filter: blur(16px);
+  }
+
+  .app-shell .primary-nav {
+    gap: 0.2rem;
+  }
+
+  .app-shell .nav-button,
+  .app-shell .nav-button:not(.nav-button--active) {
+    min-height: 3.65rem;
+    border-radius: 0.8rem;
+  }
+
+  .app-shell .nav-button:hover {
+    transform: none;
+  }
+
+  .app-shell .chat-layout {
+    display: block;
+  }
+
+  .app-shell .conversation-list__header h1 {
+    font-size: 1.65rem;
+  }
+
+  .app-shell .conversation-items {
+    gap: 0.5rem;
+  }
+
+  .app-shell .conversation-card {
+    min-width: 11rem;
+    min-height: 4.2rem;
+  }
+
+  .app-shell .message-header {
+    position: sticky;
+    z-index: 4;
+    top: 0;
+    min-height: 4.5rem;
+  }
+
+  .app-shell .classroom-reminder {
+    margin-inline: 0.8rem;
+  }
+
+  .app-shell .message-stream {
+    padding-inline: 0.9rem;
+  }
+
+  .app-shell .composer {
+    padding-inline: 0.8rem;
+  }
+
+  .app-shell .composer > small {
+    padding-left: 0;
+  }
+}
+
 .call-controls button {
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 2rem;
@@ -1581,5 +1960,114 @@
 
   .content-panel {
     padding: 2rem 1rem;
+  }
+}
+
+/* Keep the refreshed conversation surface after legacy component rules. */
+.app-shell .message-panel {
+  position: relative;
+  background:
+    radial-gradient(circle at 100% 10%, rgb(102 88 232 / 5%), transparent 20rem),
+    #fff;
+}
+
+.app-shell .message-header {
+  min-height: 5.25rem;
+  padding: 1rem clamp(1.2rem, 3vw, 2rem);
+  border-color: #e9e8ef;
+  background: rgb(255 255 255 / 88%);
+  backdrop-filter: blur(14px);
+}
+
+.app-shell .message-header h2 {
+  color: #25233a;
+  font-size: 1.08rem;
+}
+
+.app-shell .classroom-reminder {
+  max-width: 58rem;
+  margin: 1rem auto 0;
+  border: 1px solid #f4e4b4;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #fff8df, #fffaf0);
+}
+
+.app-shell .message-stream {
+  width: 100%;
+  max-width: 62rem;
+  margin-inline: auto;
+  padding: 1.2rem clamp(1.25rem, 4vw, 3rem) 2rem;
+}
+
+.app-shell .message {
+  margin-block: 1.15rem;
+}
+
+.app-shell .message__bubble {
+  border: 1px solid #ecebf0;
+  border-radius: 0.45rem 1.15rem 1.15rem;
+  padding: 0.78rem 1rem;
+  color: #353347;
+  background: #f5f5f8;
+}
+
+.app-shell .message--own .message__bubble {
+  border-color: transparent;
+  border-radius: 1.15rem 0.45rem 1.15rem 1.15rem;
+  background: linear-gradient(135deg, var(--community-purple), #526fe2);
+  box-shadow: 0 8px 18px rgb(86 75 190 / 14%);
+}
+
+.app-shell .composer {
+  padding: 0.9rem clamp(1rem, 3vw, 2rem) 1.1rem;
+  border-color: #e9e8ef;
+  background: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(14px);
+}
+
+.app-shell .composer__row {
+  max-width: 62rem;
+  margin-inline: auto;
+  gap: 0.7rem;
+}
+
+.app-shell .composer__row input {
+  border-color: #e3e1eb;
+  border-radius: 1rem;
+  background: #f7f7fa;
+}
+
+.app-shell .composer__row input:focus {
+  border-color: #aaa2f2;
+  outline: 0;
+  background: white;
+  box-shadow: 0 0 0 4px rgb(102 88 232 / 10%);
+}
+
+.app-shell .attach-button,
+.app-shell .send-button {
+  border-radius: 1rem;
+}
+
+.app-shell .send-button {
+  background: var(--community-purple);
+  box-shadow: 0 8px 18px rgb(102 88 232 / 18%);
+}
+
+@media (max-width: 680px) {
+  .app-shell .message-header {
+    position: sticky;
+    z-index: 4;
+    top: 0;
+    min-height: 4.5rem;
+  }
+
+  .app-shell .classroom-reminder {
+    margin-inline: 0.8rem;
+  }
+
+  .app-shell .message-stream,
+  .app-shell .composer {
+    padding-inline: 0.9rem;
   }
 }

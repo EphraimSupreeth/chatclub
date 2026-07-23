@@ -21,10 +21,15 @@ function ClassroomSidebar({
   return (
     <aside className="sidebar">
       <div>
-        <a className="brand brand--inverse" href="/" aria-label="ChatClub home">
+        <button
+          className="brand brand--inverse sidebar-brand"
+          type="button"
+          aria-label="Return to ChatClub messages"
+          onClick={() => onSelectView('chat')}
+        >
           <span className="brand-mark">C</span>
           <span>ChatClub</span>
-        </a>
+        </button>
         <div className="class-summary">
           <span className="class-summary__label">Your classroom</span>
           <strong>{classroom.name}</strong>
