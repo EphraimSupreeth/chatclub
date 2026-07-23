@@ -677,6 +677,11 @@
   background: rgb(10 18 25 / 88%);
 }
 
+.dialog-overlay--settings {
+  z-index: 102;
+  background: rgb(10 18 25 / 52%);
+}
+
 .dialog-content,
 .call-room {
   position: fixed;
@@ -689,6 +694,42 @@
   background: white;
   box-shadow: 0 28px 80px rgb(0 0 0 / 28%);
   animation: dialog-rise 160ms ease-out;
+}
+
+.call-settings {
+  z-index: 103;
+}
+
+.device-fields {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.3rem;
+}
+
+.device-field {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.device-field select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.75rem 0.8rem;
+  color: var(--ink);
+  background: white;
+}
+
+.device-note {
+  margin: 0;
+  padding: 0.75rem;
+  border-radius: 0.65rem;
+  color: var(--muted);
+  background: #f3f5f2;
+  font-size: 0.72rem !important;
 }
 
 .dialog-content {

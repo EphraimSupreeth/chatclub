@@ -126,9 +126,12 @@ deployment must explicitly enable TURN/TLS and expose the required ports.
    `Live`.
 3. Start, accept, and decline a call.
 4. Verify two-way audio, then enable and disable each camera.
-5. End the call from each side and confirm browser camera/microphone indicators
+5. Open **Settings** and switch between available microphones and cameras.
+   Speaker selection appears only on browsers that support audio-output routing;
+   otherwise use the device's system sound settings.
+6. End the call from each side and confirm browser camera/microphone indicators
    turn off.
-6. Repeat with one device on mobile data and switch between Wi-Fi and mobile
+7. Repeat with one device on mobile data and switch between Wi-Fi and mobile
    data during the call to verify reconnection.
 
 ## Repository workflow

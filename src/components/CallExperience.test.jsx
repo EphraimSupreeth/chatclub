@@ -11,12 +11,23 @@ function makeCall(overrides = {}) {
     cameraEnabled: false,
     microphoneEnabled: true,
     mediaReady: false,
+    devices: {
+      audioinput: [],
+      videoinput: [],
+      audiooutput: [],
+    },
+    selectedDevices: {},
+    deviceStatus: '',
+    speakerSelectionSupported: false,
     startCall: vi.fn(),
     acceptCall: vi.fn(),
     declineCall: vi.fn(),
     endCall: vi.fn(),
     toggleCamera: vi.fn(),
     toggleMicrophone: vi.fn(),
+    refreshDevices: vi.fn(async () => {}),
+    switchDevice: vi.fn(async () => {}),
+    resumeAudio: vi.fn(async () => {}),
     ...overrides,
   };
 }
@@ -60,5 +71,36 @@ describe('one-to-one call experience', () => {
     expect(screen.queryByRole('button', { name: 'Camera on' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(call.endCall).toHaveBeenCalledWith('dismissed');
+  });
+
+  test('opens accessible device settings during a connected call', () => {
+    const call = makeCall({
+      status: 'connected',
+      mediaReady: true,
+      devices: {
+        audioinput: [
+          { deviceId: 'mic-1', label: 'Built-in microphone' },
+        ],
+        videoinput: [
+          { deviceId: 'camera-1', label: 'FaceTime camera' },
+        ],
+        audiooutput: [],
+      },
+      selectedDevices: {
+        audioinput: 'mic-1',
+        videoinput: 'camera-1',
+      },
+    });
+    render(<CallExperience peerName="Arjun Rao" call={call} canCall />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+
+    expect(call.refreshDevices).toHaveBeenCalledOnce();
+    expect(screen.getByRole('heading', {
+      name: 'Audio and video settings',
+    })).toBeInTheDocument();
+    expect(screen.getByLabelText('Microphone')).toHaveValue('mic-1');
+    expect(screen.getByText(/speaker selection is controlled/i))
+      .toBeInTheDocument();
   });
 });

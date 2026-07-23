@@ -9,6 +9,11 @@ const initialCall = {
   incomingFrom: '',
   error: '',
 };
+const emptyDevices = {
+  audioinput: [],
+  videoinput: [],
+  audiooutput: [],
+};
 
 function newCallId() {
   return globalThis.crypto?.randomUUID?.() ??
@@ -34,6 +39,9 @@ export default function usePeerCall({
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
   const [audioBlocked, setAudioBlocked] = useState(false);
+  const [devices, setDevices] = useState(emptyDevices);
+  const [selectedDevices, setSelectedDevices] = useState({});
+  const [deviceStatus, setDeviceStatus] = useState('');
   const roomRef = useRef(null);
   const roomPromiseRef = useRef(null);
   const lifecycleRef = useRef(0);
@@ -52,6 +60,9 @@ export default function usePeerCall({
     setCameraEnabled(false);
     setMicrophoneEnabled(false);
     setAudioBlocked(false);
+    setDevices(emptyDevices);
+    setSelectedDevices({});
+    setDeviceStatus('');
   }, []);
 
   useEffect(() => () => {
@@ -118,6 +129,12 @@ export default function usePeerCall({
         })
         .on(RoomEvent.AudioPlaybackStatusChanged, () => {
           setAudioBlocked(!room.canPlaybackAudio);
+        })
+        .on(RoomEvent.ActiveDeviceChanged, (kind, deviceId) => {
+          setSelectedDevices((current) => ({ ...current, [kind]: deviceId }));
+        })
+        .on(RoomEvent.MediaDevicesChanged, () => {
+          setDeviceStatus('Device list changed. Reopen settings to refresh it.');
         })
         .on(RoomEvent.Connected, () => {
           setCall((current) =>
@@ -300,6 +317,41 @@ export default function usePeerCall({
     }
   }, []);
 
+  const refreshDevices = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    setDeviceStatus('Loading devices…');
+    try {
+      const { Room } = await loadLiveKit();
+      const kinds = ['audioinput', 'videoinput', 'audiooutput'];
+      const results = await Promise.all(
+        kinds.map((kind) => Room.getLocalDevices(kind, false)),
+      );
+      setDevices(Object.fromEntries(
+        kinds.map((kind, index) => [kind, results[index]]),
+      ));
+      setSelectedDevices(Object.fromEntries(
+        kinds.map((kind) => [kind, room.getActiveDevice(kind) ?? '']),
+      ));
+      setDeviceStatus('');
+    } catch (error) {
+      setDeviceStatus(error.message);
+    }
+  }, []);
+
+  const switchDevice = useCallback(async (kind, deviceId) => {
+    const room = roomRef.current;
+    if (!room || !deviceId) return;
+    setDeviceStatus('Switching device…');
+    try {
+      await room.switchActiveDevice(kind, deviceId);
+      setSelectedDevices((current) => ({ ...current, [kind]: deviceId }));
+      setDeviceStatus('');
+    } catch (error) {
+      setDeviceStatus(error.message);
+    }
+  }, []);
+
   return {
     ...call,
     localStream,
@@ -308,6 +360,13 @@ export default function usePeerCall({
     microphoneEnabled,
     audioBlocked,
     mediaReady: Boolean(roomRef.current),
+    devices,
+    selectedDevices,
+    deviceStatus,
+    speakerSelectionSupported: Boolean(
+      globalThis.HTMLMediaElement?.prototype &&
+      'setSinkId' in globalThis.HTMLMediaElement.prototype
+    ),
     startCall,
     acceptCall,
     declineCall: () => endCall('declined'),
@@ -316,5 +375,7 @@ export default function usePeerCall({
     toggleCamera,
     toggleMicrophone,
     resumeAudio,
+    refreshDevices,
+    switchDevice,
   };
 }

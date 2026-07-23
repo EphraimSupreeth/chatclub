@@ -14,6 +14,8 @@ const liveKit = vi.hoisted(() => {
     Connected: 'connected',
     Disconnected: 'disconnected',
     AudioPlaybackStatusChanged: 'audioPlaybackStatusChanged',
+    ActiveDeviceChanged: 'activeDeviceChanged',
+    MediaDevicesChanged: 'mediaDevicesChanged',
   };
 
   function makeRoom() {
@@ -22,6 +24,11 @@ const liveKit = vi.hoisted(() => {
       handlers,
       remoteParticipants: new Map(),
       canPlaybackAudio: true,
+      activeDevices: {
+        audioinput: 'mic-1',
+        videoinput: 'camera-1',
+        audiooutput: 'speaker-1',
+      },
       localParticipant: {
         trackPublications: new Map(),
         setMicrophoneEnabled: vi.fn(async () => {}),
@@ -36,6 +43,12 @@ const liveKit = vi.hoisted(() => {
       }),
       disconnect: vi.fn(async () => {}),
       startAudio: vi.fn(async () => {}),
+      getActiveDevice: vi.fn((kind) => room.activeDevices[kind]),
+      switchActiveDevice: vi.fn(async (kind, deviceId) => {
+        room.activeDevices[kind] = deviceId;
+        handlers.get(events.ActiveDeviceChanged)?.(kind, deviceId);
+        return true;
+      }),
     };
     rooms.push(room);
     return room;
@@ -49,9 +62,28 @@ const api = vi.hoisted(() => ({
 }));
 
 vi.mock('livekit-client', () => ({
-  Room: vi.fn(function Room() {
-    return liveKit.makeRoom();
-  }),
+  Room: Object.assign(
+    vi.fn(function Room() {
+      return liveKit.makeRoom();
+    }),
+    {
+      getLocalDevices: vi.fn(async (kind) => {
+        const devices = {
+          audioinput: [
+            { deviceId: 'mic-1', kind, label: 'Built-in microphone' },
+            { deviceId: 'mic-2', kind, label: 'USB microphone' },
+          ],
+          videoinput: [
+            { deviceId: 'camera-1', kind, label: 'FaceTime camera' },
+          ],
+          audiooutput: [
+            { deviceId: 'speaker-1', kind, label: 'Built-in output' },
+          ],
+        };
+        return devices[kind];
+      }),
+    },
+  ),
   RoomEvent: liveKit.events,
   Track: {},
 }));
@@ -162,5 +194,21 @@ describe('reliable LiveKit call lifecycle', () => {
     expect(result.current.status).toBe('reconnecting');
     act(() => room.handlers.get(liveKit.events.Reconnected)?.());
     expect(result.current.status).toBe('connected');
+  });
+
+  test('lists and switches call devices without reconnecting', async () => {
+    const { result } = renderHook(() =>
+      usePeerCall({ ...hookProps, sendSignal: vi.fn(async () => 'ok') }),
+    );
+    await act(() => result.current.startCall());
+
+    await act(() => result.current.refreshDevices());
+    expect(result.current.devices.audioinput).toHaveLength(2);
+    expect(result.current.selectedDevices.audioinput).toBe('mic-1');
+
+    await act(() => result.current.switchDevice('audioinput', 'mic-2'));
+    expect(liveKit.rooms[0].switchActiveDevice)
+      .toHaveBeenCalledWith('audioinput', 'mic-2');
+    expect(result.current.selectedDevices.audioinput).toBe('mic-2');
   });
 });

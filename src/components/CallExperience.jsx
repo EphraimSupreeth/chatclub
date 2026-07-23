@@ -16,6 +16,29 @@ function Video({ stream, muted, label }) {
   );
 }
 
+function DeviceSelect({ label, kind, devices, selected, onChange }) {
+  return (
+    <label className="device-field">
+      <span>{label}</span>
+      <select
+        value={selected || devices[0]?.deviceId || ''}
+        onChange={(event) => onChange(kind, event.target.value)}
+        disabled={devices.length === 0}
+      >
+        {devices.length === 0 ? (
+          <option value="">No device available</option>
+        ) : (
+          devices.map((device, index) => (
+            <option value={device.deviceId} key={device.deviceId}>
+              {device.label || `${label} ${index + 1}`}
+            </option>
+          ))
+        )}
+      </select>
+    </label>
+  );
+}
+
 export default function CallExperience({ peerName, call, canCall }) {
   const active = ['connecting', 'connected', 'reconnecting'].includes(call.status);
   const incoming = call.status === 'incoming';
@@ -104,6 +127,66 @@ export default function CallExperience({ peerName, call, canCall }) {
               <button type="button" onClick={call.toggleCamera} disabled={!call.mediaReady}>
                 {call.cameraEnabled ? 'Camera off' : 'Camera on'}
               </button>
+              <Dialog.Root
+                onOpenChange={(open) => {
+                  if (open) void call.refreshDevices();
+                }}
+              >
+                <Dialog.Trigger asChild>
+                  <button type="button" disabled={!call.mediaReady}>
+                    Settings
+                  </button>
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="dialog-overlay dialog-overlay--settings" />
+                  <Dialog.Content className="dialog-content call-settings">
+                    <Dialog.Title>Audio and video settings</Dialog.Title>
+                    <Dialog.Description>
+                      Choose the devices used for this call.
+                    </Dialog.Description>
+                    <div className="device-fields">
+                      <DeviceSelect
+                        label="Microphone"
+                        kind="audioinput"
+                        devices={call.devices.audioinput}
+                        selected={call.selectedDevices.audioinput}
+                        onChange={call.switchDevice}
+                      />
+                      <DeviceSelect
+                        label="Camera"
+                        kind="videoinput"
+                        devices={call.devices.videoinput}
+                        selected={call.selectedDevices.videoinput}
+                        onChange={call.switchDevice}
+                      />
+                      {call.speakerSelectionSupported ? (
+                        <DeviceSelect
+                          label="Speaker"
+                          kind="audiooutput"
+                          devices={call.devices.audiooutput}
+                          selected={call.selectedDevices.audiooutput}
+                          onChange={call.switchDevice}
+                        />
+                      ) : (
+                        <p className="device-note">
+                          Speaker selection is controlled by this browser or your
+                          system sound settings.
+                        </p>
+                      )}
+                    </div>
+                    {call.deviceStatus && (
+                      <p className="form-status" role="status">{call.deviceStatus}</p>
+                    )}
+                    <div className="dialog-actions">
+                      <Dialog.Close asChild>
+                        <button className="button button--primary" type="button">
+                          Done
+                        </button>
+                      </Dialog.Close>
+                    </div>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
               <button className="call-controls__end" type="button" onClick={() => call.endCall()}>
                 End call
               </button>
