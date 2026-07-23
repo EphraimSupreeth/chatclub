@@ -20,7 +20,7 @@ describe('ChatClub classroom prototype', () => {
       screen.getByRole('heading', { name: /connect chatclub to supabase/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/run migrations/i)).toHaveTextContent('001');
-    expect(screen.getByText(/run migrations/i)).toHaveTextContent('006');
+    expect(screen.getByText(/run migrations/i)).toHaveTextContent('007');
   });
 
   test('requires a private class code before entering', () => {
@@ -74,6 +74,20 @@ describe('ChatClub classroom prototype', () => {
 
     expect(screen.getByRole('heading', { name: 'Calls' })).toBeInTheDocument();
     expect(screen.getByText('No calls yet')).toBeInTheDocument();
+  });
+
+  test('opens the privacy-preserving activity inbox', () => {
+    render(<App />);
+    openDemo();
+
+    fireEvent.change(screen.getByLabelText(/class code/i), {
+      target: { value: 'DEMO-10A' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /enter class demo/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Activity' }));
+
+    expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
+    expect(screen.getByText(/message text is not repeated here/i)).toBeInTheDocument();
   });
 
   test('finds a person and opens their direct chat', () => {

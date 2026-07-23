@@ -11,6 +11,7 @@ import CommunityPanel from './components/CommunityPanel';
 import CallsPanel from './components/CallsPanel';
 import PeoplePanel from './components/PeoplePanel';
 import MorePanel from './components/MorePanel';
+import NotificationsPanel from './components/NotificationsPanel';
 import JoinScreen from './components/JoinScreen';
 import SetupScreen from './components/SetupScreen';
 
@@ -21,6 +22,11 @@ function DemoApp() {
   const [notificationPreferences, setNotificationPreferences] = useState({
     callSound: true,
     desktopNotifications: false,
+    theme: 'system',
+    textSize: 'medium',
+    reducedMotion: false,
+    mutedConversationIds: [],
+    seenNotificationIds: [],
   });
 
   function openDemoConversation(memberId) {
@@ -71,6 +77,8 @@ function DemoApp() {
             .map((member) => member.id)}
           onOpenConversation={openDemoConversation}
         />
+      ) : activeView === 'notifications' ? (
+        <NotificationsPanel notifications={[]} onOpen={() => {}} />
       ) : activeView === 'more' ? (
         <MorePanel
           preferences={notificationPreferences}

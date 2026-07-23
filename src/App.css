@@ -477,6 +477,29 @@
   background: var(--mint);
 }
 
+.avatar--violet {
+  color: #463da0;
+  background: #ded9ff;
+}
+
+.nav-button {
+  position: relative;
+}
+
+.nav-button__badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  min-width: 1.2rem;
+  border: 2px solid #201d42;
+  border-radius: 999px;
+  background: #f0586f;
+  color: #fff;
+  padding: 0.05rem 0.25rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
 .chat-layout {
   display: grid;
   min-width: 0;
@@ -3032,6 +3055,199 @@
   accent-color: #6658e8;
 }
 
+.preference-card select,
+.profile-settings input[type='text'] {
+  min-height: 2.4rem;
+  border: 1px solid #d8d5e2;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #29273d;
+  padding: 0 0.65rem;
+  font: inherit;
+}
+
+.profile-settings__preview {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.profile-settings__preview label {
+  flex: 1;
+  align-items: stretch;
+  border: 0;
+  padding: 0;
+}
+
+.profile-settings__preview input {
+  width: 100%;
+  height: auto;
+}
+
+.avatar-tone-picker {
+  display: flex;
+  gap: 0.7rem;
+  border: 0;
+  margin: 0;
+  padding: 0.75rem 0;
+}
+
+.avatar-tone-picker legend {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.avatar-tone-picker label {
+  border: 0;
+  padding: 0;
+}
+
+.avatar-tone-picker input {
+  position: absolute;
+  opacity: 0;
+}
+
+.tone-swatch {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid transparent;
+  border-radius: 50%;
+}
+
+.avatar-tone-picker input:checked + .tone-swatch {
+  border-color: #272344;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+
+.tone-swatch--blue { background: #cfdcff; }
+.tone-swatch--violet { background: #ded9ff; }
+.tone-swatch--mint { background: #cdeedf; }
+.tone-swatch--peach { background: #f5c5a8; }
+
+.notifications-panel {
+  overflow-y: auto;
+}
+
+.notification-list {
+  display: grid;
+  gap: 0.65rem;
+  width: min(760px, 100%);
+  margin-top: 1.5rem;
+}
+
+.notification-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid #e5e3ed;
+  border-radius: 1rem;
+  background: #fff;
+  color: #29273d;
+  padding: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notification-row > span:nth-child(2) {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.notification-row small,
+.notification-row time {
+  color: #77738d;
+  font-size: 0.75rem;
+}
+
+.notifications-empty {
+  display: grid;
+  place-items: center;
+  min-height: 20rem;
+  text-align: center;
+  color: #77738d;
+}
+
+.notifications-empty > span {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #d9f3e7;
+  color: #23644e;
+  font-size: 1.3rem;
+}
+
+html[data-text-size='small'] { font-size: 14px; }
+html[data-text-size='medium'] { font-size: 16px; }
+html[data-text-size='large'] { font-size: 18px; }
+
+html[data-reduced-motion='true'] *,
+html[data-reduced-motion='true'] *::before,
+html[data-reduced-motion='true'] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+html[data-theme='dark'] body,
+html[data-theme='dark'] .app-shell,
+html[data-theme='dark'] .message-panel,
+html[data-theme='dark'] .conversation-list,
+html[data-theme='dark'] .content-panel {
+  background: #151426;
+  color: #f5f3ff;
+}
+
+html[data-theme='dark'] .conversation-card,
+html[data-theme='dark'] .person-card,
+html[data-theme='dark'] .preference-card,
+html[data-theme='dark'] .more-links > button,
+html[data-theme='dark'] .notification-row,
+html[data-theme='dark'] .message__bubble,
+html[data-theme='dark'] .composer input {
+  border-color: #3a3655;
+  background: #25223a;
+  color: #f5f3ff;
+}
+
+html[data-theme='dark'] .conversation-card--active {
+  background: #332d63;
+}
+
+html[data-theme='dark'] .preference-card select,
+html[data-theme='dark'] .profile-settings input[type='text'] {
+  border-color: #4a4664;
+  background: #201d34;
+  color: #f5f3ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'] body,
+  html[data-theme='system'] .app-shell,
+  html[data-theme='system'] .message-panel,
+  html[data-theme='system'] .conversation-list,
+  html[data-theme='system'] .content-panel {
+    background: #151426;
+    color: #f5f3ff;
+  }
+
+  html[data-theme='system'] .conversation-card,
+  html[data-theme='system'] .person-card,
+  html[data-theme='system'] .preference-card,
+  html[data-theme='system'] .more-links > button,
+  html[data-theme='system'] .notification-row,
+  html[data-theme='system'] .message__bubble,
+  html[data-theme='system'] .composer input {
+    border-color: #3a3655;
+    background: #25223a;
+    color: #f5f3ff;
+  }
+}
+
 @media (max-width: 680px) {
   .people-list {
     grid-template-columns: 1fr;
@@ -3039,5 +3255,13 @@
 
   .person-card {
     padding: 0.85rem;
+  }
+
+  .notification-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .notification-row time {
+    grid-column: 2;
   }
 }

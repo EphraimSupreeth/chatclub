@@ -104,7 +104,7 @@ export async function getClassroomData(classroomId) {
   ] = await Promise.all([
     client
       .from('classroom_members')
-      .select('user_id, role, joined_at, profile:profiles(id, display_name, avatar_initials)')
+      .select('user_id, role, joined_at, profile:profiles(id, display_name, avatar_initials, avatar_tone)')
       .eq('classroom_id', classroomId)
       .order('joined_at'),
     client
@@ -259,6 +259,24 @@ export async function markConversationRead(classroomId, conversationKey) {
       conversation_key: conversationKey,
       read_at: new Date().toISOString(),
     }),
+  );
+}
+
+export async function updateProfile({ displayName, avatarTone }) {
+  const client = requireClient();
+  const { data: userData, error: userError } = await client.auth.getUser();
+  if (userError) throw userError;
+  if (!userData.user) throw new Error('Your session has expired.');
+  return throwOnError(
+    await client
+      .from('profiles')
+      .update({
+        display_name: displayName.trim(),
+        avatar_tone: avatarTone,
+      })
+      .eq('id', userData.user.id)
+      .select('display_name, avatar_initials, avatar_tone')
+      .single(),
   );
 }
 

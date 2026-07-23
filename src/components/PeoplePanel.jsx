@@ -48,7 +48,7 @@ export default function PeoplePanel({
                 <div className="person-card__avatar">
                   <Avatar
                     initials={member.initials}
-                    tone={index % 2 ? 'peach' : 'blue'}
+                    tone={member.avatarTone || (index % 2 ? 'peach' : 'blue')}
                   />
                   {available && <span className="person-card__presence" aria-label="Available" />}
                 </div>

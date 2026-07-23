@@ -54,6 +54,8 @@ the real backend; calling is therefore not shown in the interface demo.
    [`supabase/migrations/005_call_history.sql`](supabase/migrations/005_call_history.sql).
    Then run
    [`supabase/migrations/006_privacy_and_light_social.sql`](supabase/migrations/006_privacy_and_light_social.sql).
+   Then run
+   [`supabase/migrations/007_personalization.sql`](supabase/migrations/007_personalization.sql).
 3. Copy `.env.example` to `.env.local`.
 4. Add the project URL and publishable/anonymous key:
 
@@ -110,6 +112,17 @@ token.
 
 5. Do not add these LiveKit values to GitHub Actions or any `VITE_` variable.
    They are server secrets and must remain inside the Edge Function.
+
+## Privacy-safe installation
+
+The production build registers a scoped service worker so ChatClub can be
+installed from supported browsers. It caches only the application shell,
+compiled scripts, styles, fonts, icons, and manifest. Cross-origin requests are
+always passed directly to the network, so Supabase authentication, messages,
+profiles, reactions, mentions, call history, Edge Function responses, and
+LiveKit traffic are never written to the browser Cache API. Opening an installed
+app while offline shows only the shell; private classroom data is not available
+offline.
 
 ## Local development
 

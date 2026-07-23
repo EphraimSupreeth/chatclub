@@ -14,6 +14,7 @@ import {
   setMessageReaction,
   markConversationRead,
   deleteAccount,
+  updateProfile,
 } from '../services/chatclubApi';
 import ClassroomSidebar from './ClassroomSidebar';
 import ChatPanel from './ChatPanel';
@@ -24,6 +25,7 @@ import usePeerCall from '../hooks/usePeerCall';
 import CallsPanel from './CallsPanel';
 import PeoplePanel from './PeoplePanel';
 import MorePanel from './MorePanel';
+import NotificationsPanel from './NotificationsPanel';
 
 function toInitials(name = '') {
   return name
@@ -54,10 +56,23 @@ function LiveClassroom({ membership, user }) {
       return {
         callSound: true,
         desktopNotifications: false,
+        theme: 'system',
+        textSize: 'medium',
+        reducedMotion: false,
+        mutedConversationIds: [],
+        seenNotificationIds: [],
         ...JSON.parse(localStorage.getItem('chatclub-notification-preferences')),
       };
     } catch {
-      return { callSound: true, desktopNotifications: false };
+      return {
+        callSound: true,
+        desktopNotifications: false,
+        theme: 'system',
+        textSize: 'medium',
+        reducedMotion: false,
+        mutedConversationIds: [],
+        seenNotificationIds: [],
+      };
     }
   });
   const signalSenderRef = useRef(() =>
@@ -86,6 +101,7 @@ function LiveClassroom({ membership, user }) {
     name: currentMember?.profile?.display_name ?? user.user_metadata?.display_name ?? user.email,
     initials: currentMember?.profile?.avatar_initials ?? toInitials(user.email),
     role: membership.role === 'moderator' ? 'Moderator' : 'Student',
+    avatarTone: currentMember?.profile?.avatar_tone ?? 'blue',
   };
 
   const classroom = useMemo(
@@ -98,6 +114,7 @@ function LiveClassroom({ membership, user }) {
         name: member.profile.display_name,
         initials: member.profile.avatar_initials,
         role: member.role === 'moderator' ? 'Moderator' : 'Student',
+        avatarTone: member.profile.avatar_tone ?? 'blue',
         online: false,
       })),
       announcements: data.announcements.map((announcement) => ({
@@ -149,6 +166,7 @@ function LiveClassroom({ membership, user }) {
           name: member.profile.display_name,
           detail: member.role === 'moderator' ? 'Moderator' : 'Class member',
           initials: member.profile.avatar_initials,
+          avatarTone: member.profile.avatar_tone ?? 'blue',
           unread: unreadFor(member.user_id),
           mentions: mentionsFor(member.user_id),
           kind: 'direct',
@@ -226,6 +244,17 @@ function LiveClassroom({ membership, user }) {
   }, [notificationPreferences]);
 
   useEffect(() => {
+    document.documentElement.dataset.theme = notificationPreferences.theme;
+    document.documentElement.dataset.textSize = notificationPreferences.textSize;
+    document.documentElement.dataset.reducedMotion =
+      notificationPreferences.reducedMotion ? 'true' : 'false';
+  }, [
+    notificationPreferences.reducedMotion,
+    notificationPreferences.textSize,
+    notificationPreferences.theme,
+  ]);
+
+  useEffect(() => {
     if (call.status !== 'incoming') return undefined;
     if (
       notificationPreferences.desktopNotifications &&
@@ -233,8 +262,8 @@ function LiveClassroom({ membership, user }) {
       'Notification' in window &&
       Notification.permission === 'granted'
     ) {
-      new Notification(`Incoming ${call.mediaType} call`, {
-        body: `${activeConversation.name} is calling on ChatClub.`,
+      new Notification('New ChatClub activity', {
+        body: 'Open ChatClub to view it.',
       });
     }
     if (!notificationPreferences.callSound) return undefined;
@@ -286,6 +315,9 @@ function LiveClassroom({ membership, user }) {
       authorId: message.sender_id,
       author: message.sender.display_name,
       initials: message.sender.avatar_initials,
+      avatarTone: data.members.find(
+        (member) => member.user_id === message.sender_id,
+      )?.profile?.avatar_tone,
       text: message.body,
       time: new Date(message.created_at).toLocaleTimeString([], {
         hour: 'numeric',
@@ -315,6 +347,84 @@ function LiveClassroom({ membership, user }) {
           return groups;
         }, []),
     }));
+
+  const notifications = useMemo(() => {
+    const items = [];
+    conversations.forEach((conversation) => {
+      if (!conversation.unread) return;
+      if (notificationPreferences.mutedConversationIds.includes(conversation.id)) return;
+      items.push({
+        id: `conversation-${conversation.id}`,
+        type: 'conversation',
+        conversationId: conversation.id,
+        initials: conversation.initials,
+        tone: conversation.avatarTone,
+        title: conversation.mentions
+          ? `${conversation.mentions} new mention${conversation.mentions === 1 ? '' : 's'}`
+          : `${conversation.unread} unread message${conversation.unread === 1 ? '' : 's'}`,
+        description: `Open ${conversation.name}`,
+        createdAt: data.messages
+          .filter((message) => conversation.id === 'class-chat'
+            ? message.recipient_id === null
+            : message.sender_id === conversation.id && message.recipient_id === user.id)
+          .at(-1)?.created_at ?? new Date().toISOString(),
+      });
+    });
+    data.calls
+      .filter((item) =>
+        item.recipient_id === user.id &&
+        item.status === 'missed' &&
+        !notificationPreferences.seenNotificationIds.includes(`call-${item.id}`))
+      .forEach((item) => items.push({
+        id: `call-${item.id}`,
+        type: 'call',
+        conversationId: item.caller_id,
+        initials: item.caller?.avatar_initials ?? '?',
+        title: 'Missed call',
+        description: `From ${item.caller?.display_name ?? 'a class member'}`,
+        createdAt: item.started_at,
+      }));
+    return items.sort(
+      (first, second) => new Date(second.createdAt) - new Date(first.createdAt),
+    );
+  }, [
+    conversations,
+    data.calls,
+    data.messages,
+    notificationPreferences.mutedConversationIds,
+    notificationPreferences.seenNotificationIds,
+    user.id,
+  ]);
+
+  const knownMessageIdsRef = useRef(null);
+  useEffect(() => {
+    const currentIds = new Set(data.messages.map((message) => message.id));
+    const previousIds = knownMessageIdsRef.current;
+    knownMessageIdsRef.current = currentIds;
+    if (!previousIds || !document.hidden) return;
+    const incoming = data.messages.find(
+      (message) => !previousIds.has(message.id) && message.sender_id !== user.id,
+    );
+    if (!incoming) return;
+    const conversationId = incoming.recipient_id === null
+      ? 'class-chat'
+      : incoming.sender_id;
+    if (notificationPreferences.mutedConversationIds.includes(conversationId)) return;
+    if (
+      notificationPreferences.desktopNotifications &&
+      'Notification' in window &&
+      Notification.permission === 'granted'
+    ) {
+      new Notification('New ChatClub activity', {
+        body: 'Open ChatClub to view it.',
+      });
+    }
+  }, [
+    data.messages,
+    notificationPreferences.desktopNotifications,
+    notificationPreferences.mutedConversationIds,
+    user.id,
+  ]);
 
   useEffect(() => {
     if (activeView !== 'chat' || !activeConversation) return;
@@ -397,6 +507,7 @@ function LiveClassroom({ membership, user }) {
         activeView={activeView}
         onSelectView={setActiveView}
         onLeave={signOut}
+        notificationCount={notifications.length}
       />
       {activeView === 'chat' ? (
         <ChatPanel
@@ -421,6 +532,15 @@ function LiveClassroom({ membership, user }) {
           mentionableMembers={classroom.members.filter((member) => member.id !== user.id)}
           onTyping={(active) => directRealtime.send('typing', { active })}
           onOpenUpdates={() => setActiveView('announcements')}
+          conversationMuted={notificationPreferences.mutedConversationIds.includes(
+            activeConversation.id,
+          )}
+          onToggleConversationMute={() => setNotificationPreferences((current) => ({
+            ...current,
+            mutedConversationIds: current.mutedConversationIds.includes(activeConversation.id)
+              ? current.mutedConversationIds.filter((id) => id !== activeConversation.id)
+              : [...current.mutedConversationIds, activeConversation.id],
+          }))}
         />
       ) : activeView === 'calls' ? (
         <CallsPanel
@@ -444,6 +564,20 @@ function LiveClassroom({ membership, user }) {
             setActiveView('chat');
           }}
         />
+      ) : activeView === 'notifications' ? (
+        <NotificationsPanel
+          notifications={notifications}
+          onOpen={(notification) => {
+            if (notification.type === 'call') {
+              setNotificationPreferences((current) => ({
+                ...current,
+                seenNotificationIds: [...current.seenNotificationIds, notification.id],
+              }));
+            }
+            setActiveConversationId(notification.conversationId);
+            setActiveView('chat');
+          }}
+        />
       ) : activeView === 'more' ? (
         <MorePanel
           preferences={notificationPreferences}
@@ -451,6 +585,11 @@ function LiveClassroom({ membership, user }) {
           onNavigate={setActiveView}
           onSignOut={signOut}
           onDeleteAccount={deleteAccount}
+          currentUser={currentUser}
+          onUpdateProfile={async (profile) => {
+            await updateProfile(profile);
+            await loadData();
+          }}
         />
       ) : activeView === 'moderation' ? (
         <ModeratorPanel

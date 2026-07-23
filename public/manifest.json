@@ -1,7 +1,7 @@
 {
   "name": "ChatClub",
   "short_name": "ChatClub",
-  "description": "A private, moderated classroom community.",
+  "description": "Private chat, calls and activity for classroom friends.",
   "id": "/chatclub/",
   "start_url": "/chatclub/",
   "scope": "/chatclub/",

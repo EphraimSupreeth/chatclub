@@ -21,6 +21,8 @@ function ChatPanel({
   mentionableMembers = [],
   onTyping,
   onOpenUpdates,
+  conversationMuted = false,
+  onToggleConversationMute,
 }) {
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
@@ -155,7 +157,7 @@ function ChatPanel({
             >
               <Avatar
                 initials={conversation.initials}
-                tone={index % 2 === 0 ? 'blue' : 'peach'}
+                tone={conversation.avatarTone || (index % 2 === 0 ? 'blue' : 'peach')}
               />
               <span className="conversation-card__copy">
                 <strong>{conversation.name}</strong>
@@ -236,6 +238,15 @@ function ChatPanel({
                       <dd>Use Report on a message to privately contact moderators</dd>
                     </div>
                   </dl>
+                  {onToggleConversationMute && (
+                    <button
+                      className="settings-action"
+                      type="button"
+                      onClick={onToggleConversationMute}
+                    >
+                      {conversationMuted ? 'Turn notifications on' : 'Mute notifications'}
+                    </button>
+                  )}
                 </Dialog.Content>
               </Dialog.Portal>
             </Dialog.Root>
@@ -259,7 +270,7 @@ function ChatPanel({
                 {!isOwn && (
                   <Avatar
                     initials={message.initials}
-                    tone={message.moderator ? 'mint' : 'peach'}
+                    tone={message.avatarTone || (message.moderator ? 'mint' : 'peach')}
                     size="small"
                   />
                 )}

@@ -13,10 +13,14 @@ ChatClub stores:
 - class and direct messages;
 - announcements;
 - personal mute and block choices;
-- reports submitted to moderators; and
+- reports submitted to moderators;
 - an audit trail of report review, member removal, and invitation rotation;
-- message reactions and mentions; and
+- message reactions and mentions;
 - per-member conversation read timestamps.
+
+Display preferences and per-conversation notification mutes are stored only in
+the browser on the member's device. Generated avatars use initials and a color;
+ChatClub does not accept profile-photo uploads.
 
 ChatClub does not need home addresses, telephone numbers, precise location,
 advertising identifiers, or contact-list access. Members should never put this
@@ -33,6 +37,11 @@ information in messages.
 
 Database row-level security is the enforcement boundary. Frontend visibility is
 not treated as authorization.
+
+The installable web app caches only public application-shell assets. Supabase
+and LiveKit requests are cross-origin and explicitly excluded from the service
+worker cache. Private messages, profiles, mentions, reactions, call history,
+tokens, and authentication responses are not made available offline.
 
 ## Retention
 
