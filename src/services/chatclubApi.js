@@ -10,6 +10,12 @@ function throwOnError(result) {
   return result.data;
 }
 
+function optionalMigrationRows(result) {
+  if (!result.error) return result.data ?? [];
+  if (['42P01', 'PGRST205'].includes(result.error.code)) return [];
+  throw result.error;
+}
+
 export async function signUp({ name, email, password }) {
   const client = requireClient();
   const { data, error } = await client.auth.signUp({
@@ -106,7 +112,7 @@ export async function getClassroomData(classroomId) {
     messages: throwOnError(messagesResult) ?? [],
     announcements: throwOnError(announcementsResult) ?? [],
     mutedUserIds: (throwOnError(mutesResult) ?? []).map((mute) => mute.muted_user_id),
-    blockedUserIds: (throwOnError(blocksResult) ?? []).map((block) => block.blocked_user_id),
+    blockedUserIds: optionalMigrationRows(blocksResult).map((block) => block.blocked_user_id),
   };
 }
 
