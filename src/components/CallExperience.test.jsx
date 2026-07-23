@@ -19,6 +19,8 @@ function makeCall(overrides = {}) {
     selectedDevices: {},
     deviceStatus: '',
     speakerSelectionSupported: false,
+    joinWithMicrophone: false,
+    joinWithCamera: false,
     startCall: vi.fn(),
     acceptCall: vi.fn(),
     declineCall: vi.fn(),
@@ -28,12 +30,13 @@ function makeCall(overrides = {}) {
     refreshDevices: vi.fn(async () => {}),
     switchDevice: vi.fn(async () => {}),
     resumeAudio: vi.fn(async () => {}),
+    setJoinPreference: vi.fn(),
     ...overrides,
   };
 }
 
 describe('one-to-one call experience', () => {
-  test('starts a call only when the private channel is available', () => {
+  test('opens device review before starting an available call', () => {
     const call = makeCall();
     const { rerender } = render(
       <CallExperience peerName="Arjun Rao" call={call} canCall={false} />,
@@ -46,17 +49,23 @@ describe('one-to-one call experience', () => {
     fireEvent.click(screen.getByRole('button', {
       name: /start an audio or video call/i,
     }));
+    expect(call.startCall).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: 'Call Arjun Rao' }))
+      .toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Start call' }));
     expect(call.startCall).toHaveBeenCalledOnce();
   });
 
-  test('requires explicit acceptance and explains that camera starts off', () => {
+  test('requires device review before accepting an incoming call', () => {
     const call = makeCall({ status: 'incoming' });
     render(<CallExperience peerName="Arjun Rao" call={call} canCall />);
 
     expect(screen.getByRole('dialog')).toHaveTextContent(
-      'Your camera will stay off when you join.',
+      'Review your microphone and camera before joining.',
     );
-    fireEvent.click(screen.getByRole('button', { name: /join with camera off/i }));
+    fireEvent.click(screen.getByRole('button', { name: /review devices/i }));
+    expect(call.acceptCall).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Join call' }));
     expect(call.acceptCall).toHaveBeenCalledOnce();
   });
 

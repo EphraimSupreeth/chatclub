@@ -42,12 +42,24 @@ export default function usePeerCall({
   const [devices, setDevices] = useState(emptyDevices);
   const [selectedDevices, setSelectedDevices] = useState({});
   const [deviceStatus, setDeviceStatus] = useState('');
+  const [joinWithMicrophone, setJoinWithMicrophone] = useState(false);
+  const [joinWithCamera, setJoinWithCamera] = useState(false);
   const roomRef = useRef(null);
   const roomPromiseRef = useRef(null);
   const lifecycleRef = useRef(0);
   const callRef = useRef(call);
+  const selectedDevicesRef = useRef(selectedDevices);
+  const mediaPreferencesRef = useRef({
+    microphone: joinWithMicrophone,
+    camera: joinWithCamera,
+  });
 
   callRef.current = call;
+  selectedDevicesRef.current = selectedDevices;
+  mediaPreferencesRef.current = {
+    microphone: joinWithMicrophone,
+    camera: joinWithCamera,
+  };
 
   const cleanup = useCallback(async () => {
     lifecycleRef.current += 1;
@@ -60,8 +72,6 @@ export default function usePeerCall({
     setCameraEnabled(false);
     setMicrophoneEnabled(false);
     setAudioBlocked(false);
-    setDevices(emptyDevices);
-    setSelectedDevices({});
     setDeviceStatus('');
   }, []);
 
@@ -85,10 +95,17 @@ export default function usePeerCall({
       }
 
       const { Room, RoomEvent } = await loadLiveKit();
+      const preferredDevices = selectedDevicesRef.current;
       const room = new Room({
         adaptiveStream: true,
         dynacast: true,
         disconnectOnPageLeave: true,
+        audioCaptureDefaults: preferredDevices.audioinput
+          ? { deviceId: preferredDevices.audioinput }
+          : undefined,
+        videoCaptureDefaults: preferredDevices.videoinput
+          ? { deviceId: preferredDevices.videoinput }
+          : undefined,
       });
 
       const refreshRemoteStream = () => {
@@ -162,10 +179,13 @@ export default function usePeerCall({
       }
 
       roomRef.current = room;
-      await room.localParticipant.setMicrophoneEnabled(true);
+      const preferences = mediaPreferencesRef.current;
+      await room.localParticipant.setMicrophoneEnabled(preferences.microphone);
+      await room.localParticipant.setCameraEnabled(preferences.camera);
       setAudioBlocked(!room.canPlaybackAudio);
       refreshLocalStream();
-      setMicrophoneEnabled(true);
+      setMicrophoneEnabled(preferences.microphone);
+      setCameraEnabled(preferences.camera);
       return room;
     })();
 
@@ -319,7 +339,6 @@ export default function usePeerCall({
 
   const refreshDevices = useCallback(async () => {
     const room = roomRef.current;
-    if (!room) return;
     setDeviceStatus('Loading devices…');
     try {
       const { Room } = await loadLiveKit();
@@ -331,7 +350,13 @@ export default function usePeerCall({
         kinds.map((kind, index) => [kind, results[index]]),
       ));
       setSelectedDevices(Object.fromEntries(
-        kinds.map((kind) => [kind, room.getActiveDevice(kind) ?? '']),
+        kinds.map((kind, index) => [
+          kind,
+          room?.getActiveDevice(kind) ??
+            selectedDevicesRef.current[kind] ??
+            results[index][0]?.deviceId ??
+            '',
+        ]),
       ));
       setDeviceStatus('');
     } catch (error) {
@@ -341,7 +366,11 @@ export default function usePeerCall({
 
   const switchDevice = useCallback(async (kind, deviceId) => {
     const room = roomRef.current;
-    if (!room || !deviceId) return;
+    if (!deviceId) return;
+    if (!room) {
+      setSelectedDevices((current) => ({ ...current, [kind]: deviceId }));
+      return;
+    }
     setDeviceStatus('Switching device…');
     try {
       await room.switchActiveDevice(kind, deviceId);
@@ -350,6 +379,11 @@ export default function usePeerCall({
     } catch (error) {
       setDeviceStatus(error.message);
     }
+  }, []);
+
+  const setJoinPreference = useCallback((kind, enabled) => {
+    if (kind === 'microphone') setJoinWithMicrophone(enabled);
+    if (kind === 'camera') setJoinWithCamera(enabled);
   }, []);
 
   return {
@@ -367,6 +401,8 @@ export default function usePeerCall({
       globalThis.HTMLMediaElement?.prototype &&
       'setSinkId' in globalThis.HTMLMediaElement.prototype
     ),
+    joinWithMicrophone,
+    joinWithCamera,
     startCall,
     acceptCall,
     declineCall: () => endCall('declined'),
@@ -377,5 +413,6 @@ export default function usePeerCall({
     resumeAudio,
     refreshDevices,
     switchDevice,
+    setJoinPreference,
   };
 }

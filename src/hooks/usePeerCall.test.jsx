@@ -135,7 +135,9 @@ describe('reliable LiveKit call lifecycle', () => {
       'short-lived-token',
     );
     expect(liveKit.rooms[0].localParticipant.setMicrophoneEnabled)
-      .toHaveBeenCalledWith(true);
+      .toHaveBeenCalledWith(false);
+    expect(liveKit.rooms[0].localParticipant.setCameraEnabled)
+      .toHaveBeenCalledWith(false);
     expect(sendSignal).toHaveBeenCalledWith('call-accept', {
       callId: 'call-12345',
     });
@@ -210,5 +212,22 @@ describe('reliable LiveKit call lifecycle', () => {
     expect(liveKit.rooms[0].switchActiveDevice)
       .toHaveBeenCalledWith('audioinput', 'mic-2');
     expect(result.current.selectedDevices.audioinput).toBe('mic-2');
+  });
+
+  test('uses the explicit pre-call microphone and camera choices', async () => {
+    const { result } = renderHook(() =>
+      usePeerCall({ ...hookProps, sendSignal: vi.fn(async () => 'ok') }),
+    );
+
+    act(() => {
+      result.current.setJoinPreference('microphone', true);
+      result.current.setJoinPreference('camera', true);
+    });
+    await act(() => result.current.startCall());
+
+    expect(liveKit.rooms[0].localParticipant.setMicrophoneEnabled)
+      .toHaveBeenCalledWith(true);
+    expect(liveKit.rooms[0].localParticipant.setCameraEnabled)
+      .toHaveBeenCalledWith(true);
   });
 });
