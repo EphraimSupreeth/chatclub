@@ -21,6 +21,27 @@ supabase/migrations/003_safety_and_reliability.sql
 Apply this migration before deploying the matching frontend because the frontend
 queries the new `member_blocks` and `audit_events` tables.
 
+Milestone 4 also requires migration 004 and the `livekit-token` Edge Function:
+
+```text
+supabase/migrations/004_direct_realtime_and_calls.sql
+supabase/functions/livekit-token
+```
+
+## Calling service
+
+The `livekit-token` Edge Function is the authorization boundary for calls.
+Configure `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, and
+`APP_ORIGIN` as Supabase Edge Function secrets, then deploy the function.
+
+Monitor LiveKit connection failures and regional availability. For self-hosted
+LiveKit, expose UDP media ports and enable TURN/TLS on port 443 for restrictive
+school and mobile networks. Never enable recording without a separate consent,
+retention, moderator-access, and incident-response design.
+
+After every media-service configuration change, complete the two-device
+acceptance check in the README using both Wi-Fi and mobile data.
+
 ## Backup and recovery
 
 Supabase backup availability and point-in-time recovery depend on the project

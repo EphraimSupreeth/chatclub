@@ -17,7 +17,7 @@ function Video({ stream, muted, label }) {
 }
 
 export default function CallExperience({ peerName, call, canCall }) {
-  const active = ['connecting', 'connected'].includes(call.status);
+  const active = ['connecting', 'connected', 'reconnecting'].includes(call.status);
   const incoming = call.status === 'incoming';
   const failed = call.status === 'failed';
 
@@ -86,9 +86,16 @@ export default function CallExperience({ peerName, call, canCall }) {
               {call.error ||
                 (call.status === 'connected'
                   ? 'Connected'
+                  : call.status === 'reconnecting'
+                    ? 'Reconnecting…'
                   : 'Connecting securely…')}
             </p>
             <div className="call-controls">
+              {call.audioBlocked && (
+                <button type="button" onClick={call.resumeAudio}>
+                  Enable sound
+                </button>
+              )}
               <button type="button" onClick={call.toggleMicrophone} disabled={!call.mediaReady}>
                 {call.microphoneEnabled ? 'Mute' : 'Unmute'}
               </button>

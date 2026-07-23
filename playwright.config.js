@@ -20,15 +20,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        launchOptions: {
-          args: [
-            '--use-fake-device-for-media-stream',
-            '--use-fake-ui-for-media-stream',
-          ],
-        },
-      },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });

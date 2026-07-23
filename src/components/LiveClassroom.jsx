@@ -124,6 +124,8 @@ function LiveClassroom({ membership, user }) {
   const call = usePeerCall({
     sendSignal,
     peerName: activeConversation?.name ?? 'Class member',
+    classroomId: classroom.id,
+    peerUserId: activePeerId,
   });
   const directRealtime = useDirectRealtime({
     classroomId: classroom.id,

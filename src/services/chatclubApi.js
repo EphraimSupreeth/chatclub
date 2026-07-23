@@ -228,6 +228,28 @@ export async function rotateClassroomInvite(classroomId) {
   );
 }
 
+export async function getLiveKitCallToken({
+  classroomId,
+  peerUserId,
+  callId,
+}) {
+  const { data, error } = await requireClient().functions.invoke(
+    'livekit-token',
+    {
+      body: {
+        classroomId,
+        peerUserId,
+        callId,
+      },
+    },
+  );
+  if (error) throw error;
+  if (!data?.token || !data?.url) {
+    throw new Error('Calling service is not configured.');
+  }
+  return data;
+}
+
 export function subscribeToClassroom(classroomId, onChange) {
   const client = requireClient();
   const channel = client

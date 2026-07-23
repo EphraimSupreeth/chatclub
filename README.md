@@ -24,7 +24,8 @@ Milestone 4 adds private realtime conversation signals and one-to-one calls:
   Supabase Realtime channels.
 - Persistent messages remain in Postgres and use WebSocket refresh hints for
   prompt delivery without treating ephemeral broadcasts as message storage.
-- Direct classmates can start private one-to-one WebRTC audio/video calls.
+- Direct classmates can start private one-to-one WebRTC audio/video calls through
+  LiveKit's resilient media transport.
 - Calls join with the camera off, include explicit accept/decline controls, and
   stop local media when ended.
 - Block rules are enforced when authorizing direct Realtime channels.
@@ -52,28 +53,48 @@ the real backend; calling is therefore not shown in the interface demo.
    VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
    ```
 
-5. Add `VITE_WEBRTC_ICE_SERVERS` as a JSON array. The checked-in example uses
-   public STUN for development. Before classroom testing across different
-   networks, configure a TURN service:
-
-   ```text
-   VITE_WEBRTC_ICE_SERVERS=[{"urls":"stun:stun.example.org:3478"},{"urls":"turn:turn.example.org:3478","username":"short-lived-user","credential":"short-lived-password"}]
-   ```
-
-   Static frontend variables are visible to users. Use short-lived TURN
-   credentials in production; do not place a permanent TURN secret here.
-6. In Supabase Authentication settings, configure the local and production site
+5. In Supabase Authentication settings, configure the local and production site
    URLs. Keep email confirmation enabled for a real deployment.
-7. Start the app and create the first classroom. The creator receives its
+6. Start the app and create the first classroom. The creator receives its
    one-time invitation code and becomes its moderator.
 
-For GitHub Pages, add `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and
-`VITE_WEBRTC_ICE_SERVERS` as repository Actions secrets. The deployment workflow
-injects them only while building the public frontend bundle.
+For GitHub Pages, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as
+repository Actions secrets. The deployment workflow injects them only while
+building the public frontend bundle.
 
-Never put a Supabase service-role key in frontend environment variables. Only the
+Never put a Supabase service-role or LiveKit secret in frontend environment
+variables. Only the
 publishable/anonymous key belongs in the browser; authorization is enforced by
 the migration's row-level security policies.
+
+## Reliable calling setup
+
+ChatClub uses the open-source LiveKit SDK instead of browser-to-browser media.
+Supabase still handles private invitations; a Supabase Edge Function verifies
+both classroom members and block rules before issuing a ten-minute LiveKit room
+token.
+
+1. Create a LiveKit Cloud project, or deploy the open-source LiveKit server with
+   TURN/TLS enabled.
+2. In the Supabase dashboard, open **Edge Functions → Secrets** and add:
+
+   ```text
+   LIVEKIT_URL=wss://your-project.livekit.cloud
+   LIVEKIT_API_KEY=your-livekit-api-key
+   LIVEKIT_API_SECRET=your-livekit-api-secret
+   APP_ORIGIN=https://ephraimsupreeth.github.io
+   ```
+
+3. Deploy the checked-in token function:
+
+   ```bash
+   supabase login
+   supabase link --project-ref YOUR_PROJECT_REF
+   supabase functions deploy livekit-token
+   ```
+
+4. Do not add these LiveKit values to GitHub Actions or any `VITE_` variable.
+   They are server secrets and must remain inside the Edge Function.
 
 ## Local development
 
@@ -94,11 +115,9 @@ npm run build
 npm run test:e2e
 ```
 
-The browser suite uses Chromium's fake camera and microphone to complete a real
-local WebRTC offer/answer and ICE negotiation. Before releasing calling to a
-classroom, also test two physical devices on separate networks. If signaling is
-live but the call cannot connect, verify that the configured ICE array includes
-a reachable TURN server.
+Before releasing calling to a classroom, test two physical devices on separate
+networks. LiveKit Cloud provides managed TURN/TLS fallback. A self-hosted
+deployment must explicitly enable TURN/TLS and expose the required ports.
 
 ### Call acceptance check
 
@@ -109,8 +128,8 @@ a reachable TURN server.
 4. Verify two-way audio, then enable and disable each camera.
 5. End the call from each side and confirm browser camera/microphone indicators
    turn off.
-6. Repeat with one device on mobile data. A same-Wi-Fi success does not prove
-   TURN connectivity.
+6. Repeat with one device on mobile data and switch between Wi-Fi and mobile
+   data during the call to verify reconnection.
 
 ## Repository workflow
 

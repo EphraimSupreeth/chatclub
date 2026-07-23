@@ -1,101 +1,148 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-const media = vi.hoisted(() => ({
-  createPeerConnection: vi.fn(),
-  getCallMedia: vi.fn(),
-  stopMedia: vi.fn(),
+const liveKit = vi.hoisted(() => {
+  const rooms = [];
+  const events = {
+    TrackSubscribed: 'trackSubscribed',
+    TrackUnsubscribed: 'trackUnsubscribed',
+    ParticipantDisconnected: 'participantDisconnected',
+    LocalTrackPublished: 'localTrackPublished',
+    LocalTrackUnpublished: 'localTrackUnpublished',
+    Reconnecting: 'reconnecting',
+    Reconnected: 'reconnected',
+    Connected: 'connected',
+    Disconnected: 'disconnected',
+    AudioPlaybackStatusChanged: 'audioPlaybackStatusChanged',
+  };
+
+  function makeRoom() {
+    const handlers = new Map();
+    const room = {
+      handlers,
+      remoteParticipants: new Map(),
+      canPlaybackAudio: true,
+      localParticipant: {
+        trackPublications: new Map(),
+        setMicrophoneEnabled: vi.fn(async () => {}),
+        setCameraEnabled: vi.fn(async () => {}),
+      },
+      on: vi.fn((event, handler) => {
+        handlers.set(event, handler);
+        return room;
+      }),
+      connect: vi.fn(async () => {
+        handlers.get(events.Connected)?.();
+      }),
+      disconnect: vi.fn(async () => {}),
+      startAudio: vi.fn(async () => {}),
+    };
+    rooms.push(room);
+    return room;
+  }
+
+  return { rooms, events, makeRoom };
+});
+
+const api = vi.hoisted(() => ({
+  getLiveKitCallToken: vi.fn(),
 }));
 
-vi.mock('../lib/webrtc', () => media);
+vi.mock('livekit-client', () => ({
+  Room: vi.fn(function Room() {
+    return liveKit.makeRoom();
+  }),
+  RoomEvent: liveKit.events,
+  Track: {},
+}));
+vi.mock('../services/chatclubApi', () => api);
 
 import usePeerCall from './usePeerCall';
 
-function makePeer() {
-  return {
-    signalingState: 'stable',
-    connectionState: 'new',
-    remoteDescription: null,
-    localDescription: null,
-    addTrack: vi.fn(),
-    addTransceiver: vi.fn(() => ({
-      receiver: { track: { kind: 'video' } },
-      sender: { replaceTrack: vi.fn() },
-    })),
-    getTransceivers: vi.fn(() => []),
-    createOffer: vi.fn(async () => ({ type: 'offer', sdp: 'offer-sdp' })),
-    createAnswer: vi.fn(async () => ({ type: 'answer', sdp: 'answer-sdp' })),
-    setLocalDescription: vi.fn(async function setLocal(description) {
-      this.localDescription = description;
-      this.signalingState = description.type === 'offer'
-        ? 'have-local-offer'
-        : 'stable';
-    }),
-    setRemoteDescription: vi.fn(async function setRemote(description) {
-      this.remoteDescription = description;
-      this.signalingState = description.type === 'offer'
-        ? 'have-remote-offer'
-        : 'stable';
-    }),
-    addIceCandidate: vi.fn(),
-    close: vi.fn(),
-  };
-}
+const hookProps = {
+  peerName: 'Arjun Rao',
+  classroomId: 'classroom-id',
+  peerUserId: 'peer-id',
+};
 
-describe('WebRTC signaling state machine', () => {
+describe('reliable LiveKit call lifecycle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    media.getCallMedia.mockResolvedValue({
-      getTracks: () => [{ kind: 'audio' }],
-      getAudioTracks: () => [{ enabled: true }],
-      getVideoTracks: () => [],
+    liveKit.rooms.length = 0;
+    api.getLiveKitCallToken.mockResolvedValue({
+      token: 'short-lived-token',
+      url: 'wss://chatclub.livekit.cloud',
     });
+    globalThis.MediaStream = class MediaStream {
+      constructor(tracks = []) {
+        this.tracks = tracks;
+      }
+    };
   });
 
-  test('applies a remote answer only once and only while an offer is pending', async () => {
-    const peer = makePeer();
-    media.createPeerConnection.mockReturnValue(peer);
+  test('joins an authorized room before accepting an incoming call', async () => {
     const sendSignal = vi.fn(async () => 'ok');
     const { result } = renderHook(() =>
-      usePeerCall({ sendSignal, peerName: 'Arjun Rao' }),
+      usePeerCall({ ...hookProps, sendSignal }),
     );
 
-    await act(() => result.current.startCall());
-    const callId = result.current.callId;
-    await act(() => result.current.handleSignal('call-accept', { callId }));
-    await waitFor(() => expect(peer.signalingState).toBe('have-local-offer'));
-
-    const answer = { type: 'answer', sdp: 'answer-sdp' };
-    await act(() => result.current.handleSignal('call-answer', {
-      callId,
-      description: answer,
+    await act(() => result.current.handleSignal('call-invite', {
+      callId: 'call-12345',
     }));
-    await act(() => result.current.handleSignal('call-answer', {
-      callId,
-      description: answer,
-    }));
+    expect(result.current.status).toBe('incoming');
 
-    expect(peer.setRemoteDescription).toHaveBeenCalledOnce();
-    expect(result.current.status).not.toBe('failed');
+    await act(() => result.current.acceptCall());
+
+    expect(api.getLiveKitCallToken).toHaveBeenCalledWith({
+      classroomId: 'classroom-id',
+      peerUserId: 'peer-id',
+      callId: 'call-12345',
+    });
+    expect(liveKit.rooms[0].connect).toHaveBeenCalledWith(
+      'wss://chatclub.livekit.cloud',
+      'short-lived-token',
+    );
+    expect(liveKit.rooms[0].localParticipant.setMicrophoneEnabled)
+      .toHaveBeenCalledWith(true);
+    expect(sendSignal).toHaveBeenCalledWith('call-accept', {
+      callId: 'call-12345',
+    });
+    expect(result.current.status).toBe('connected');
   });
 
-  test('ignores an answer when the peer is already stable', async () => {
-    const peer = makePeer();
-    media.createPeerConnection.mockReturnValue(peer);
+  test('caller joins the same room after the invitation is accepted', async () => {
+    const sendSignal = vi.fn(async () => 'ok');
     const { result } = renderHook(() =>
-      usePeerCall({ sendSignal: vi.fn(async () => 'ok'), peerName: 'Arjun Rao' }),
+      usePeerCall({ ...hookProps, sendSignal }),
     );
 
     await act(() => result.current.startCall());
     const callId = result.current.callId;
     await act(() => result.current.handleSignal('call-accept', { callId }));
-    peer.signalingState = 'stable';
+
+    await waitFor(() => expect(result.current.status).toBe('connected'));
+    expect(liveKit.rooms).toHaveLength(1);
+
     await act(() => result.current.handleSignal('call-answer', {
       callId,
-      description: { type: 'answer', sdp: 'late-answer' },
+      description: { type: 'answer', sdp: 'old-client-answer' },
     }));
+    expect(result.current.status).toBe('connected');
+  });
 
-    expect(peer.setRemoteDescription).not.toHaveBeenCalled();
-    expect(result.current.status).not.toBe('failed');
+  test('surfaces a reconnecting state and recovers cleanly', async () => {
+    const { result } = renderHook(() =>
+      usePeerCall({ ...hookProps, sendSignal: vi.fn(async () => 'ok') }),
+    );
+
+    await act(() => result.current.startCall());
+    const callId = result.current.callId;
+    await act(() => result.current.handleSignal('call-accept', { callId }));
+    const room = liveKit.rooms[0];
+
+    act(() => room.handlers.get(liveKit.events.Reconnecting)?.());
+    expect(result.current.status).toBe('reconnecting');
+    act(() => room.handlers.get(liveKit.events.Reconnected)?.());
+    expect(result.current.status).toBe('connected');
   });
 });

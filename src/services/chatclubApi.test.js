@@ -11,13 +11,16 @@ const { channel, client } = vi.hoisted(() => {
   const supabaseClient = {
     channel: vi.fn(() => directChannel),
     removeChannel: vi.fn(),
+    functions: {
+      invoke: vi.fn(),
+    },
   };
   return { channel: directChannel, client: supabaseClient };
 });
 
 vi.mock('../lib/supabase', () => ({ supabase: client }));
 
-import { connectDirectConversation } from './chatclubApi';
+import { connectDirectConversation, getLiveKitCallToken } from './chatclubApi';
 
 describe('private direct Realtime connection', () => {
   beforeEach(() => {
@@ -88,6 +91,32 @@ describe('private direct Realtime connection', () => {
         active: true,
         from: 'user-z',
         to: 'user-a',
+      },
+    });
+  });
+
+  test('requests a short-lived call token from the Edge Function', async () => {
+    client.functions.invoke.mockResolvedValue({
+      data: {
+        token: 'short-lived-token',
+        url: 'wss://chatclub.livekit.cloud',
+      },
+      error: null,
+    });
+
+    await expect(getLiveKitCallToken({
+      classroomId: 'classroom-id',
+      peerUserId: 'peer-id',
+      callId: 'call-id',
+    })).resolves.toEqual({
+      token: 'short-lived-token',
+      url: 'wss://chatclub.livekit.cloud',
+    });
+    expect(client.functions.invoke).toHaveBeenCalledWith('livekit-token', {
+      body: {
+        classroomId: 'classroom-id',
+        peerUserId: 'peer-id',
+        callId: 'call-id',
       },
     });
   });
