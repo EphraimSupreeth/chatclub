@@ -3,7 +3,7 @@
   "name": "KidChat App",
   "icons": [
     {
-      "src": "logo192.png",
+      "src": "my-icon-512.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
