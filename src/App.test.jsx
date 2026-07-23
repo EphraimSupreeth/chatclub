@@ -20,7 +20,7 @@ describe('ChatClub classroom prototype', () => {
       screen.getByRole('heading', { name: /connect chatclub to supabase/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/run migrations/i)).toHaveTextContent('001');
-    expect(screen.getByText(/run migrations/i)).toHaveTextContent('005');
+    expect(screen.getByText(/run migrations/i)).toHaveTextContent('006');
   });
 
   test('requires a private class code before entering', () => {

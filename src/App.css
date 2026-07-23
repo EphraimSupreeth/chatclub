@@ -1444,6 +1444,211 @@
   background: var(--blue);
 }
 
+.message__bubble--mentioned {
+  box-shadow: inset 3px 0 0 #f4b740;
+}
+
+.message-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.reaction-chip,
+.reaction-picker summary {
+  min-height: 28px;
+  border: 1px solid #dfe2ee;
+  border-radius: 999px;
+  background: #fff;
+  color: #263247;
+  cursor: pointer;
+  padding: 0.2rem 0.55rem;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.reaction-chip--mine {
+  border-color: #7867ef;
+  background: #f0edff;
+}
+
+.reaction-picker {
+  position: relative;
+}
+
+.reaction-picker summary {
+  display: grid;
+  place-items: center;
+  list-style: none;
+}
+
+.reaction-picker summary::-webkit-details-marker {
+  display: none;
+}
+
+.reaction-picker > div {
+  position: absolute;
+  z-index: 5;
+  bottom: calc(100% + 0.35rem);
+  left: 0;
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.4rem;
+  border: 1px solid #dfe2ee;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(27 25 66 / 16%);
+}
+
+.message--own .reaction-picker > div {
+  right: 0;
+  left: auto;
+}
+
+.reaction-picker button {
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.35rem;
+  font-size: 1.05rem;
+}
+
+.reaction-picker button:hover {
+  background: #f0edff;
+}
+
+.mention-suggestions {
+  position: absolute;
+  right: 5.5rem;
+  bottom: calc(100% - 0.25rem);
+  left: 3.8rem;
+  z-index: 6;
+  overflow: hidden;
+  border: 1px solid #dfe2ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 36px rgb(27 25 66 / 15%);
+}
+
+.mention-suggestions > button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.65rem;
+  border: 0;
+  background: transparent;
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mention-suggestions > button:hover {
+  background: #f5f3ff;
+}
+
+.mention-suggestions span:last-child {
+  display: grid;
+}
+
+.mention-suggestions small {
+  color: #687388;
+}
+
+.privacy-card {
+  gap: 0.8rem;
+}
+
+.privacy-summary {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.privacy-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.privacy-summary dt {
+  font-weight: 700;
+}
+
+.privacy-summary dd {
+  margin: 0;
+  color: #687388;
+  text-align: right;
+}
+
+.settings-action {
+  width: 100%;
+  border: 1px solid #dfe2ee;
+  border-radius: 12px;
+  background: #fff;
+  color: #263247;
+  cursor: pointer;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.settings-action--danger {
+  color: #ad303b;
+}
+
+.account-delete-dialog {
+  position: fixed;
+  z-index: 101;
+  top: 50%;
+  left: 50%;
+  width: min(440px, calc(100vw - 2rem));
+  transform: translate(-50%, -50%);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(17 19 46 / 25%);
+  padding: 1.5rem;
+}
+
+.account-delete-dialog h2 {
+  margin: 0 0 0.5rem;
+}
+
+.account-delete-dialog > p {
+  color: #687388;
+  line-height: 1.5;
+}
+
+.account-delete-dialog label {
+  display: block;
+  margin: 1rem 0 0.35rem;
+  font-weight: 700;
+}
+
+.account-delete-dialog input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #cfd4e2;
+  border-radius: 10px;
+  padding: 0 0.75rem;
+  font: inherit;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.2rem;
+}
+
+.button--danger {
+  border-color: #bd3d48;
+  background: #bd3d48;
+  color: #fff;
+}
+
 .composer {
   padding: 1rem 1.7rem 1.3rem;
   border-top: 1px solid var(--line);

@@ -34,7 +34,24 @@ export async function signIn({ email, password }) {
 }
 
 export async function signOut() {
-  return throwOnError(await requireClient().auth.signOut());
+  return throwOnError(await requireClient().auth.signOut({ scope: 'global' }));
+}
+
+export async function deleteAccount(password) {
+  const { data, error } = await requireClient().functions.invoke('delete-account', {
+    body: { password },
+  });
+  if (error) {
+    let message = error.message;
+    try {
+      const body = await error.context?.json();
+      if (body?.error) message = body.error;
+    } catch {
+      // Preserve the client error when the response is not JSON.
+    }
+    throw new Error(message);
+  }
+  return data;
 }
 
 export async function getSession() {
@@ -81,6 +98,9 @@ export async function getClassroomData(classroomId) {
     mutesResult,
     blocksResult,
     callsResult,
+    readsResult,
+    reactionsResult,
+    mentionsResult,
   ] = await Promise.all([
     client
       .from('classroom_members')
@@ -124,6 +144,16 @@ export async function getClassroomData(classroomId) {
       .eq('classroom_id', classroomId)
       .order('started_at', { ascending: false })
       .limit(50),
+    client
+      .from('conversation_reads')
+      .select('conversation_key, read_at')
+      .eq('classroom_id', classroomId),
+    client
+      .from('message_reactions')
+      .select('message_id, user_id, emoji'),
+    client
+      .from('message_mentions')
+      .select('message_id, mentioned_user_id'),
   ]);
 
   return {
@@ -133,6 +163,9 @@ export async function getClassroomData(classroomId) {
     mutedUserIds: (throwOnError(mutesResult) ?? []).map((mute) => mute.muted_user_id),
     blockedUserIds: optionalMigrationRows(blocksResult).map((block) => block.blocked_user_id),
     calls: optionalMigrationRows(callsResult),
+    reads: optionalMigrationRows(readsResult),
+    reactions: optionalMigrationRows(reactionsResult),
+    mentions: optionalMigrationRows(mentionsResult),
   };
 }
 
@@ -188,6 +221,44 @@ export async function sendDirectMessage(classroomId, recipientId, body) {
       })
       .select('id')
       .single(),
+  );
+}
+
+export async function addMessageMentions(messageId, mentionedUserIds) {
+  if (!mentionedUserIds.length) return [];
+  return throwOnError(
+    await requireClient().from('message_mentions').insert(
+      mentionedUserIds.map((mentionedUserId) => ({
+        message_id: messageId,
+        mentioned_user_id: mentionedUserId,
+      })),
+    ),
+  );
+}
+
+export async function setMessageReaction({ messageId, emoji, active }) {
+  const client = requireClient();
+  if (active) {
+    return throwOnError(
+      await client.from('message_reactions').insert({ message_id: messageId, emoji }),
+    );
+  }
+  return throwOnError(
+    await client
+      .from('message_reactions')
+      .delete()
+      .eq('message_id', messageId)
+      .eq('emoji', emoji),
+  );
+}
+
+export async function markConversationRead(classroomId, conversationKey) {
+  return throwOnError(
+    await requireClient().from('conversation_reads').upsert({
+      classroom_id: classroomId,
+      conversation_key: conversationKey,
+      read_at: new Date().toISOString(),
+    }),
   );
 }
 

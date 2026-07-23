@@ -10,6 +10,10 @@ import {
   blockMember,
   createCallHistory,
   updateCallHistory,
+  addMessageMentions,
+  setMessageReaction,
+  markConversationRead,
+  deleteAccount,
 } from '../services/chatclubApi';
 import ClassroomSidebar from './ClassroomSidebar';
 import ChatPanel from './ChatPanel';
@@ -40,6 +44,9 @@ function LiveClassroom({ membership, user }) {
     mutedUserIds: [],
     blockedUserIds: [],
     calls: [],
+    reads: [],
+    reactions: [],
+    mentions: [],
   });
   const [status, setStatus] = useState('Loading classroom…');
   const [notificationPreferences, setNotificationPreferences] = useState(() => {
@@ -104,14 +111,35 @@ function LiveClassroom({ membership, user }) {
     [classroomRecord, data.announcements, data.members],
   );
 
-  const conversations = useMemo(
-    () => [
+  const conversations = useMemo(() => {
+    const readTimes = new Map(
+      data.reads.map((read) => [read.conversation_key, new Date(read.read_at).getTime()]),
+    );
+    const unreadFor = (conversationId) => data.messages.filter((message) => {
+      if (message.sender_id === user.id) return false;
+      const belongs = conversationId === 'class-chat'
+        ? message.recipient_id === null
+        : message.sender_id === conversationId && message.recipient_id === user.id;
+      return belongs && new Date(message.created_at).getTime() > (readTimes.get(conversationId) ?? 0);
+    }).length;
+    const mentionsFor = (conversationId) => data.mentions.filter((mention) => {
+      if (mention.mentioned_user_id !== user.id) return false;
+      const message = data.messages.find((item) => item.id === mention.message_id);
+      if (!message) return false;
+      const belongs = conversationId === 'class-chat'
+        ? message.recipient_id === null
+        : message.sender_id === conversationId && message.recipient_id === user.id;
+      return belongs &&
+        new Date(message.created_at).getTime() > (readTimes.get(conversationId) ?? 0);
+    }).length;
+    return [
       {
         id: 'class-chat',
         name: 'Class chat',
         detail: `${data.members.length} members`,
         initials: classroomRecord.name.slice(0, 3).toUpperCase(),
-        unread: 0,
+        unread: unreadFor('class-chat'),
+        mentions: mentionsFor('class-chat'),
         kind: 'group',
       },
       ...data.members
@@ -121,12 +149,12 @@ function LiveClassroom({ membership, user }) {
           name: member.profile.display_name,
           detail: member.role === 'moderator' ? 'Moderator' : 'Class member',
           initials: member.profile.avatar_initials,
-          unread: 0,
+          unread: unreadFor(member.user_id),
+          mentions: mentionsFor(member.user_id),
           kind: 'direct',
         })),
-    ],
-    [classroomRecord.name, data.members, user.id],
-  );
+    ];
+  }, [classroomRecord.name, data.members, data.mentions, data.messages, data.reads, user.id]);
 
   const activeConversation =
     conversations.find((conversation) => conversation.id === activeConversationId) ??
@@ -266,15 +294,79 @@ function LiveClassroom({ membership, user }) {
       moderator:
         data.members.find((member) => member.user_id === message.sender_id)?.role ===
         'moderator',
+      mentionedCurrentUser: data.mentions.some(
+        (mention) =>
+          mention.message_id === message.id && mention.mentioned_user_id === user.id,
+      ),
+      reactions: data.reactions
+        .filter((reaction) => reaction.message_id === message.id)
+        .reduce((groups, reaction) => {
+          const group = groups.find((item) => item.emoji === reaction.emoji);
+          if (group) {
+            group.count += 1;
+            if (reaction.user_id === user.id) group.mine = true;
+          } else {
+            groups.push({
+              emoji: reaction.emoji,
+              count: 1,
+              mine: reaction.user_id === user.id,
+            });
+          }
+          return groups;
+        }, []),
     }));
 
+  useEffect(() => {
+    if (activeView !== 'chat' || !activeConversation) return;
+    const latestMessage = visibleMessages.at(-1);
+    if (!latestMessage) return;
+    const currentRead = data.reads.find(
+      (read) => read.conversation_key === activeConversation.id,
+    );
+    if (
+      currentRead &&
+      new Date(currentRead.read_at).getTime() >=
+        new Date(data.messages.find((message) => message.id === latestMessage.id)?.created_at).getTime()
+    ) return;
+    const readAt = new Date().toISOString();
+    setData((current) => ({
+      ...current,
+      reads: [
+        ...current.reads.filter(
+          (read) => read.conversation_key !== activeConversation.id,
+        ),
+        { conversation_key: activeConversation.id, read_at: readAt },
+      ],
+    }));
+    markConversationRead(classroom.id, activeConversation.id).catch(() => {});
+  }, [
+    activeConversation,
+    activeView,
+    classroom.id,
+    data.messages,
+    data.reads,
+    visibleMessages,
+  ]);
+
   async function handleSend(body) {
+    let sentMessage;
     if (activeConversation.id === 'class-chat') {
-      await sendClassMessage(classroom.id, body);
+      sentMessage = await sendClassMessage(classroom.id, body);
     } else {
-      await sendDirectMessage(classroom.id, activeConversation.id, body);
+      sentMessage = await sendDirectMessage(classroom.id, activeConversation.id, body);
       await directRealtime.send('message-changed', {});
     }
+    const mentionedUserIds = data.members
+      .filter((member) => body.includes(`@${member.profile.display_name}`))
+      .map((member) => member.user_id);
+    if (sentMessage?.id && mentionedUserIds.length) {
+      await addMessageMentions(sentMessage.id, mentionedUserIds);
+    }
+    await loadData();
+  }
+
+  async function handleReaction(messageId, emoji, active) {
+    await setMessageReaction({ messageId, emoji, active });
     await loadData();
   }
 
@@ -325,6 +417,8 @@ function LiveClassroom({ membership, user }) {
           onSelectConversation={setActiveConversationId}
           onSend={handleSend}
           onReport={handleReport}
+          onReact={handleReaction}
+          mentionableMembers={classroom.members.filter((member) => member.id !== user.id)}
           onTyping={(active) => directRealtime.send('typing', { active })}
           onOpenUpdates={() => setActiveView('announcements')}
         />
@@ -355,6 +449,8 @@ function LiveClassroom({ membership, user }) {
           preferences={notificationPreferences}
           onChangePreferences={setNotificationPreferences}
           onNavigate={setActiveView}
+          onSignOut={signOut}
+          onDeleteAccount={deleteAccount}
         />
       ) : activeView === 'moderation' ? (
         <ModeratorPanel

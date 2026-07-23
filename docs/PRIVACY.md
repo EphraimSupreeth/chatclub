@@ -14,7 +14,9 @@ ChatClub stores:
 - announcements;
 - personal mute and block choices;
 - reports submitted to moderators; and
-- an audit trail of report review, member removal, and invitation rotation.
+- an audit trail of report review, member removal, and invitation rotation;
+- message reactions and mentions; and
+- per-member conversation read timestamps.
 
 ChatClub does not need home addresses, telephone numbers, precise location,
 advertising identifiers, or contact-list access. Members should never put this
@@ -62,9 +64,14 @@ never included in the browser bundle.
 
 ## Member rights and requests
 
-The classroom operator must provide a channel for account access, correction,
-export, and deletion requests. Deletion may be delayed when records must be
-retained for an active safety investigation or legal requirement.
+Members can delete their account from **More → Privacy and account** after
+confirming their password. Deletion removes their profile, memberships, messages,
+reactions, mentions, call history, announcements and reports. If the member
+created a shared classroom, ownership is transferred to another moderator or
+member; an empty classroom is removed. Operators must separately provide a
+channel for access, correction, and export requests. Applicable safeguarding or
+legal retention requirements must be reviewed before enabling self-service
+deletion for a particular deployment.
 
 ## Minors
 

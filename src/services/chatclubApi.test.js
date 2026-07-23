@@ -20,7 +20,11 @@ const { channel, client } = vi.hoisted(() => {
 
 vi.mock('../lib/supabase', () => ({ supabase: client }));
 
-import { connectDirectConversation, getLiveKitCallToken } from './chatclubApi';
+import {
+  connectDirectConversation,
+  deleteAccount,
+  getLiveKitCallToken,
+} from './chatclubApi';
 
 describe('private direct Realtime connection', () => {
   beforeEach(() => {
@@ -139,5 +143,33 @@ describe('private direct Realtime connection', () => {
       peerUserId: 'peer-id',
       callId: 'call-id',
     })).rejects.toThrow('LIVEKIT_URL must begin with wss://');
+  });
+
+  test('sends password confirmation only to the account deletion Edge Function', async () => {
+    client.functions.invoke.mockResolvedValue({
+      data: { message: 'Account deleted' },
+      error: null,
+    });
+
+    await expect(deleteAccount('correct horse battery staple')).resolves.toEqual({
+      message: 'Account deleted',
+    });
+    expect(client.functions.invoke).toHaveBeenCalledWith('delete-account', {
+      body: { password: 'correct horse battery staple' },
+    });
+  });
+
+  test('shows the specific account deletion error returned by the server', async () => {
+    client.functions.invoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Edge Function returned a non-2xx status code',
+        context: {
+          json: vi.fn(async () => ({ error: 'Password is incorrect' })),
+        },
+      },
+    });
+
+    await expect(deleteAccount('wrong password')).rejects.toThrow('Password is incorrect');
   });
 });

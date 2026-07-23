@@ -17,6 +17,8 @@ function ChatPanel({
   onSelectConversation,
   onSend,
   onReport,
+  onReact,
+  mentionableMembers = [],
   onTyping,
   onOpenUpdates,
 }) {
@@ -25,6 +27,14 @@ function ChatPanel({
   const [sending, setSending] = useState(false);
   const typingTimerRef = useRef(null);
   const typingActiveRef = useRef(false);
+  const mentionMatch = draft.match(/(?:^|\s)@([^@\s]*)$/);
+  const mentionSuggestions = mentionMatch
+    ? mentionableMembers
+      .filter((member) =>
+        member.name.toLowerCase().startsWith(mentionMatch[1].toLowerCase()),
+      )
+      .slice(0, 5)
+    : [];
 
   useEffect(() => () => window.clearTimeout(typingTimerRef.current), []);
 
@@ -77,6 +87,23 @@ function ChatPanel({
     try {
       await onReport(messageId, reason);
       setNotice('Report sent privately to the classroom moderators.');
+    } catch (error) {
+      setNotice(error.message);
+    }
+  }
+
+  function insertMention(name) {
+    setDraft((current) =>
+      current.replace(/(?:^|\s)@([^@\s]*)$/, (match) => {
+        const prefix = match.startsWith(' ') ? ' ' : '';
+        return `${prefix}@${name} `;
+      }),
+    );
+  }
+
+  async function handleReaction(messageId, emoji, active) {
+    try {
+      await onReact(messageId, emoji, active);
     } catch (error) {
       setNotice(error.message);
     }
@@ -136,7 +163,7 @@ function ChatPanel({
               </span>
               {conversation.unread > 0 && (
                 <span className="unread-count" aria-label={`${conversation.unread} unread`}>
-                  {conversation.unread}
+                  {conversation.mentions > 0 ? `@ ${conversation.unread}` : conversation.unread}
                 </span>
               )}
             </button>
@@ -242,7 +269,54 @@ function ChatPanel({
                     {message.moderator && <span>Moderator</span>}
                     <time>{message.time}</time>
                   </p>
-                  <p className="message__bubble">{message.text}</p>
+                  <p className={
+                    message.mentionedCurrentUser
+                      ? 'message__bubble message__bubble--mentioned'
+                      : 'message__bubble'
+                  }>{message.text}</p>
+                  {onReact && (
+                    <div className="message-reactions" aria-label="Message reactions">
+                      {message.reactions.map((reaction) => (
+                        <button
+                          type="button"
+                          className={reaction.mine ? 'reaction-chip reaction-chip--mine' : 'reaction-chip'}
+                          key={reaction.emoji}
+                          onClick={() => handleReaction(
+                            message.id,
+                            reaction.emoji,
+                            !reaction.mine,
+                          )}
+                          aria-label={`${reaction.emoji} ${reaction.count}`}
+                        >
+                          {reaction.emoji} {reaction.count}
+                        </button>
+                      ))}
+                      <details className="reaction-picker">
+                        <summary aria-label="Add reaction">＋</summary>
+                        <div>
+                          {['👍', '❤️', '😂', '😮', '😢', '👏'].map((emoji) => (
+                            <button
+                              type="button"
+                              key={emoji}
+                              onClick={(event) => {
+                                event.currentTarget.closest('details').removeAttribute('open');
+                                handleReaction(
+                                  message.id,
+                                  emoji,
+                                  !message.reactions.some(
+                                    (reaction) => reaction.emoji === emoji && reaction.mine,
+                                  ),
+                                );
+                              }}
+                              aria-label={`React ${emoji}`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </details>
+                    </div>
+                  )}
                   {!isOwn && onReport && (
                     <button
                       className="message__action"
@@ -281,6 +355,21 @@ function ChatPanel({
               {sending ? 'Sending…' : 'Send'}
             </button>
           </div>
+          {mentionSuggestions.length > 0 && (
+            <div className="mention-suggestions" role="listbox" aria-label="Mention a classmate">
+              {mentionSuggestions.map((member) => (
+                <button
+                  type="button"
+                  role="option"
+                  key={member.id}
+                  onClick={() => insertMention(member.name)}
+                >
+                  <Avatar initials={member.initials} tone="blue" size="small" />
+                  <span><strong>{member.name}</strong><small>{member.role}</small></span>
+                </button>
+              ))}
+            </div>
+          )}
           <small>
             {peerTyping
               ? `${activeConversation.name} is typing…`

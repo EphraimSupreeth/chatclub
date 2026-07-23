@@ -52,6 +52,8 @@ the real backend; calling is therefore not shown in the interface demo.
    [`supabase/migrations/004_direct_realtime_and_calls.sql`](supabase/migrations/004_direct_realtime_and_calls.sql).
    Then run
    [`supabase/migrations/005_call_history.sql`](supabase/migrations/005_call_history.sql).
+   Then run
+   [`supabase/migrations/006_privacy_and_light_social.sql`](supabase/migrations/006_privacy_and_light_social.sql).
 3. Copy `.env.example` to `.env.local`.
 4. Add the project URL and publishable/anonymous key:
 
@@ -100,7 +102,13 @@ token.
    supabase functions deploy livekit-token
    ```
 
-4. Do not add these LiveKit values to GitHub Actions or any `VITE_` variable.
+4. Deploy the password-confirmed account deletion function:
+
+   ```bash
+   supabase functions deploy delete-account
+   ```
+
+5. Do not add these LiveKit values to GitHub Actions or any `VITE_` variable.
    They are server secrets and must remain inside the Edge Function.
 
 ## Local development
