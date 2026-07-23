@@ -25,6 +25,15 @@ function corsHeaders(request: Request) {
 }
 
 function response(request: Request, body: unknown, status = 200) {
+  const message =
+    typeof body === 'object' && body && 'error' in body
+      ? String((body as { error: unknown }).error)
+      : 'token-issued'
+  console.log(JSON.stringify({
+    event: 'livekit-token-response',
+    status,
+    message,
+  }))
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -81,6 +90,9 @@ Deno.serve(async (request) => {
       peerUserId === user.id
     ) {
       return response(request, { error: 'Invalid call request' }, 400)
+    }
+    if (!liveKitUrl.startsWith('wss://')) {
+      return response(request, { error: 'LIVEKIT_URL must begin with wss://' }, 503)
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey, {

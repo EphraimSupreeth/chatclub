@@ -243,7 +243,16 @@ export async function getLiveKitCallToken({
       },
     },
   );
-  if (error) throw error;
+  if (error) {
+    let message = error.message;
+    try {
+      const body = await error.context?.json();
+      if (body?.error) message = body.error;
+    } catch {
+      // Preserve the Supabase client error when the response is not JSON.
+    }
+    throw new Error(message);
+  }
   if (!data?.token || !data?.url) {
     throw new Error('Calling service is not configured.');
   }

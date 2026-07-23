@@ -33,9 +33,11 @@ export default function CallExperience({ peerName, call, canCall }) {
         Call
       </button>
 
-      {call.status === 'inviting' && (
+      {['preparing', 'inviting'].includes(call.status) && (
         <div className="call-status" role="status">
-          Calling {peerName}…
+          {call.status === 'preparing'
+            ? 'Preparing secure call…'
+            : `Calling ${peerName}…`}
           <button type="button" onClick={() => call.endCall('cancelled')}>Cancel</button>
         </div>
       )}

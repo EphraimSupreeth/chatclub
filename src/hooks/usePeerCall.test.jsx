@@ -118,6 +118,8 @@ describe('reliable LiveKit call lifecycle', () => {
 
     await act(() => result.current.startCall());
     const callId = result.current.callId;
+    expect(liveKit.rooms[0].connect).toHaveBeenCalledOnce();
+    expect(sendSignal).toHaveBeenCalledWith('call-invite', { callId });
     await act(() => result.current.handleSignal('call-accept', { callId }));
 
     await waitFor(() => expect(result.current.status).toBe('connected'));
@@ -128,6 +130,22 @@ describe('reliable LiveKit call lifecycle', () => {
       description: { type: 'answer', sdp: 'old-client-answer' },
     }));
     expect(result.current.status).toBe('connected');
+  });
+
+  test('shows the peer authorization failure on the caller', async () => {
+    const { result } = renderHook(() =>
+      usePeerCall({ ...hookProps, sendSignal: vi.fn(async () => 'ok') }),
+    );
+
+    await act(() => result.current.startCall());
+    const callId = result.current.callId;
+    await act(() => result.current.handleSignal('call-failed', {
+      callId,
+      message: 'Calling service is not configured',
+    }));
+
+    expect(result.current.status).toBe('failed');
+    expect(result.current.error).toBe('Calling service is not configured');
   });
 
   test('surfaces a reconnecting state and recovers cleanly', async () => {

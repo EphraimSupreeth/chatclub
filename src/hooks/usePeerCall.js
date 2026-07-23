@@ -120,7 +120,11 @@ export default function usePeerCall({
           setAudioBlocked(!room.canPlaybackAudio);
         })
         .on(RoomEvent.Connected, () => {
-          setCall((current) => ({ ...current, status: 'connected', error: '' }));
+          setCall((current) =>
+            current.status === 'connecting'
+              ? { ...current, status: 'connected', error: '' }
+              : current,
+          );
         })
         .on(RoomEvent.Disconnected, () => {
           if (lifecycle !== lifecycleRef.current || roomRef.current !== room) return;
@@ -145,7 +149,6 @@ export default function usePeerCall({
       setAudioBlocked(!room.canPlaybackAudio);
       refreshLocalStream();
       setMicrophoneEnabled(true);
-      setCall((current) => ({ ...current, status: 'connected', error: '' }));
       return room;
     })();
 
@@ -159,13 +162,16 @@ export default function usePeerCall({
   const startCall = useCallback(async () => {
     if (!classroomId || !peerUserId) return;
     const callId = newCallId();
-    setCall({ status: 'inviting', callId, incomingFrom: '', error: '' });
+    setCall({ status: 'preparing', callId, incomingFrom: '', error: '' });
     try {
+      await connectRoom(callId);
+      setCall({ status: 'inviting', callId, incomingFrom: '', error: '' });
       await sendSignal('call-invite', { callId });
     } catch (error) {
+      await cleanup();
       setCall({ ...initialCall, status: 'failed', error: error.message });
     }
-  }, [classroomId, peerUserId, sendSignal]);
+  }, [classroomId, cleanup, connectRoom, peerUserId, sendSignal]);
 
   const acceptCall = useCallback(async () => {
     const { callId } = callRef.current;
@@ -177,7 +183,14 @@ export default function usePeerCall({
     } catch (error) {
       await cleanup();
       setCall({ ...initialCall, status: 'failed', error: error.message });
-      await sendSignal('call-end', { callId, reason: 'connection-error' });
+      try {
+        await sendSignal('call-failed', {
+          callId,
+          message: error.message,
+        });
+      } catch {
+        // The recipient still receives their local authorization error.
+      }
     }
   }, [cleanup, connectRoom, sendSignal]);
 
@@ -227,6 +240,14 @@ export default function usePeerCall({
       if (event === 'call-accept' && current.status === 'inviting') {
         setCall((value) => ({ ...value, status: 'connecting' }));
         await connectRoom(payload.callId);
+        setCall((value) => ({ ...value, status: 'connected', error: '' }));
+      } else if (event === 'call-failed') {
+        await cleanup();
+        setCall({
+          ...initialCall,
+          status: 'failed',
+          error: payload.message || `${peerName} could not join the call.`,
+        });
       } else if (event === 'call-end') {
         await cleanup();
         setCall(initialCall);
@@ -236,9 +257,9 @@ export default function usePeerCall({
       await cleanup();
       setCall({ ...initialCall, status: 'failed', error: error.message });
       try {
-        await sendSignal('call-end', {
+        await sendSignal('call-failed', {
           callId: payload.callId,
-          reason: 'connection-error',
+          message: error.message,
         });
       } catch {
         // The local failure remains visible even if the peer is already offline.

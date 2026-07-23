@@ -120,4 +120,24 @@ describe('private direct Realtime connection', () => {
       },
     });
   });
+
+  test('surfaces the Edge Function response instead of a generic HTTP error', async () => {
+    client.functions.invoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Edge Function returned a non-2xx status code',
+        context: {
+          json: vi.fn(async () => ({
+            error: 'LIVEKIT_URL must begin with wss://',
+          })),
+        },
+      },
+    });
+
+    await expect(getLiveKitCallToken({
+      classroomId: 'classroom-id',
+      peerUserId: 'peer-id',
+      callId: 'call-id',
+    })).rejects.toThrow('LIVEKIT_URL must begin with wss://');
+  });
 });
