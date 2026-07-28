@@ -72,7 +72,9 @@ function ChatPanel({
     setNotice('');
     try {
       await onSend(draft);
-      await onTyping?.(false);
+      // Typing is an optional realtime hint. A stalled WebSocket acknowledgement
+      // must never delay or make a successfully persisted message look failed.
+      onTyping?.(false).catch(() => {});
       typingActiveRef.current = false;
       window.clearTimeout(typingTimerRef.current);
       setDraft('');

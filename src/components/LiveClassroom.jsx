@@ -465,7 +465,9 @@ function LiveClassroom({ membership, platformAccess = 'student', user }) {
       sentMessage = await sendClassMessage(classroom.id, body);
     } else {
       sentMessage = await sendDirectMessage(classroom.id, activeConversation.id, body);
-      await directRealtime.send('message-changed', {});
+      // The database is authoritative. Realtime broadcasts only prompt the peer
+      // to refresh and should not hold the sender UI open if WebSockets stall.
+      void directRealtime.send('message-changed', {}).catch(() => {});
     }
     const mentionedUserIds = data.members
       .filter((member) => body.includes(`@${member.profile.display_name}`))
