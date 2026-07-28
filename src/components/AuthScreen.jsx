@@ -37,7 +37,7 @@ function AuthScreen() {
     <main className="auth-page">
       <section className="auth-copy">
         <a className="brand brand--large" href={import.meta.env.BASE_URL} aria-label="ChatClub home">
-          <span className="brand-mark">C</span>
+          <span className="brand-mark"><img src={`${import.meta.env.BASE_URL}chatclub-mark.png`} alt="" /></span>
           <span>ChatClub</span>
         </a>
         <span className="eyebrow">Private classroom community</span>

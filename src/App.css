@@ -26,6 +26,14 @@
   background: var(--blue);
 }
 
+.brand-mark img {
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
 .eyebrow {
   display: block;
   margin-bottom: 0.75rem;

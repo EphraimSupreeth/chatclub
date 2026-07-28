@@ -18,7 +18,7 @@ function JoinScreen({ onEnter }) {
     <main className="join-page">
       <section className="join-intro" aria-labelledby="welcome-title">
         <a className="brand brand--large" href={import.meta.env.BASE_URL} aria-label="ChatClub home">
-          <span className="brand-mark">C</span>
+          <span className="brand-mark"><img src={`${import.meta.env.BASE_URL}chatclub-mark.png`} alt="" /></span>
           <span>ChatClub</span>
         </a>
         <p className="eyebrow">Private by design</p>

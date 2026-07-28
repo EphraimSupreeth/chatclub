@@ -22,7 +22,7 @@ class ErrorBoundary extends Component {
       return (
         <main className="loading-page">
           <section className="error-card" role="alert">
-            <span className="brand-mark">C</span>
+            <span className="brand-mark"><img src={`${import.meta.env.BASE_URL}chatclub-mark.png`} alt="" /></span>
             <h1>ChatClub needs to reload</h1>
             <p>
               Something unexpected happened. Your message was not assumed to be sent.

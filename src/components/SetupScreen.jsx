@@ -2,7 +2,7 @@ function SetupScreen({ onViewDemo }) {
   return (
     <main className="setup-page">
       <section className="setup-card">
-        <span className="brand-mark">C</span>
+        <span className="brand-mark"><img src={`${import.meta.env.BASE_URL}chatclub-mark.png`} alt="" /></span>
         <span className="eyebrow">Backend setup required</span>
         <h1>Connect ChatClub to Supabase</h1>
         <p>

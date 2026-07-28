@@ -52,7 +52,7 @@ function ClassroomSidebar({
           aria-label="Return to ChatClub messages"
           onClick={() => onSelectView('chat')}
         >
-          <span className="brand-mark">C</span>
+          <span className="brand-mark"><img src={`${import.meta.env.BASE_URL}chatclub-mark.png`} alt="" /></span>
           <span>ChatClub</span>
         </button>
         <nav className="primary-nav" aria-label="Classroom">
