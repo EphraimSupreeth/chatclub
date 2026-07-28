@@ -45,6 +45,34 @@ describe('message composer reliability', () => {
     expect(screen.getByRole('button', { name: /send/i })).not.toBeDisabled();
   });
 
+  test('replaces raw Safari network errors with a regulated composer alert', async () => {
+    const onSend = vi.fn().mockRejectedValue(new TypeError('Load failed'));
+    render(
+      <ChatPanel
+        classroom={classroom}
+        currentUser={{ id: 'current-user' }}
+        conversations={[conversation]}
+        activeConversation={conversation}
+        messages={[]}
+        onSelectConversation={vi.fn()}
+        onSend={onSend}
+      />,
+    );
+
+    const composer = screen.getByRole('textbox');
+    fireEvent.change(composer, { target: { value: 'Hello' } });
+    fireEvent.submit(composer.closest('form'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'ChatClub could not reach the server. Check your connection and try again.',
+    );
+    expect(screen.queryByText('TypeError: Load failed')).not.toBeInTheDocument();
+    expect(screen.getByText(/reports are reviewed privately by approved classroom moderators/i))
+      .toBeVisible();
+    expect(screen.queryByText(/Ms\. Fernandes can review reports/i))
+      .not.toBeInTheDocument();
+  });
+
   test('keeps reactions contextual and renders the selected reaction below the message', async () => {
     const onReact = vi.fn().mockResolvedValue();
     const message = {

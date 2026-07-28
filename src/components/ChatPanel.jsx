@@ -30,6 +30,15 @@ function ReportIcon() {
   );
 }
 
+function friendlyActionError(error, fallback) {
+  const message = error?.message ?? '';
+  if (/load failed|failed to fetch|network|networkerror/i.test(message)) {
+    return 'ChatClub could not reach the server. Check your connection and try again.';
+  }
+  if (/rate limit|too many|please wait/i.test(message)) return message;
+  return fallback;
+}
+
 function ChatPanel({
   classroom,
   currentUser,
@@ -53,6 +62,7 @@ function ChatPanel({
 }) {
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
+  const [noticeTone, setNoticeTone] = useState('info');
   const [sending, setSending] = useState(false);
   const [openActionMenu, setOpenActionMenu] = useState(null);
   const typingTimerRef = useRef(null);
@@ -67,6 +77,12 @@ function ChatPanel({
     : [];
 
   useEffect(() => () => window.clearTimeout(typingTimerRef.current), []);
+
+  useEffect(() => {
+    setNotice('');
+    setNoticeTone('info');
+    setOpenActionMenu(null);
+  }, [activeConversation.id]);
 
   useEffect(() => {
     function closeOnOutsidePress(event) {
@@ -113,6 +129,7 @@ function ChatPanel({
     if (!draft.trim()) return;
     if (!onSend) {
       setNotice('Demo only — messages are not sent or stored.');
+      setNoticeTone('info');
       return;
     }
     setSending(true);
@@ -126,7 +143,8 @@ function ChatPanel({
       window.clearTimeout(typingTimerRef.current);
       setDraft('');
     } catch (error) {
-      setNotice(error.message);
+      setNotice(friendlyActionError(error, 'Message could not be sent. Please try again.'));
+      setNoticeTone('error');
     } finally {
       setSending(false);
     }
@@ -138,8 +156,10 @@ function ChatPanel({
     try {
       await onReport(messageId, reason);
       setNotice('Report sent privately to the classroom moderators.');
+      setNoticeTone('success');
     } catch (error) {
-      setNotice(error.message);
+      setNotice(friendlyActionError(error, 'Report could not be sent. Please try again.'));
+      setNoticeTone('error');
     }
   }
 
@@ -156,7 +176,8 @@ function ChatPanel({
     try {
       await onReact(messageId, emoji, active);
     } catch (error) {
-      setNotice(error.message);
+      setNotice(friendlyActionError(error, 'Reaction could not be saved. Please try again.'));
+      setNoticeTone('error');
     }
   }
 
@@ -222,7 +243,10 @@ function ChatPanel({
         </div>
         <div className="moderation-note">
           <span aria-hidden="true">◇</span>
-          <p><strong>Moderated space</strong>Ms. Fernandes can review reports.</p>
+          <p>
+            <strong>Moderated classroom</strong>
+            Reports are reviewed privately by approved classroom moderators.
+          </p>
         </div>
       </aside>
 
@@ -448,7 +472,14 @@ function ChatPanel({
         </div>
 
         <form className="composer" onSubmit={handleSend}>
-          {notice && <p className="composer__notice" role="status">{notice}</p>}
+          {notice && (
+            <p
+              className={`composer__notice composer__notice--${noticeTone}`}
+              role={noticeTone === 'error' ? 'alert' : 'status'}
+            >
+              {notice}
+            </p>
+          )}
           <label className="sr-only" htmlFor="message-draft">
             Message {activeConversation.name}
           </label>
@@ -462,6 +493,7 @@ function ChatPanel({
               onChange={(event) => {
                 setDraft(event.target.value);
                 setNotice('');
+                setNoticeTone('info');
                 updateTyping(event.target.value);
               }}
               placeholder={`Message ${activeConversation.name}`}
