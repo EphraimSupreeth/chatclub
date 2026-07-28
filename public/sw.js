@@ -1,9 +1,9 @@
-const CACHE_NAME = 'chatclub-shell-v2';
+const CACHE_NAME = 'chatclub-shell-v3';
 const BASE_PATH = new URL(self.registration.scope).pathname;
 const SHELL_FILES = [
   BASE_PATH,
   `${BASE_PATH}manifest.json`,
-  `${BASE_PATH}favicon.png`,
+  `${BASE_PATH}chatclub-favicon-v2.png`,
   `${BASE_PATH}logo192.png`,
   `${BASE_PATH}logo512.png`,
   `${BASE_PATH}chatclub-mark.png`,
