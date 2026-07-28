@@ -479,8 +479,40 @@ function LiveClassroom({ membership, platformAccess = 'student', user }) {
   }
 
   async function handleReaction(messageId, emoji, active) {
-    await setMessageReaction({ messageId, emoji, active });
-    await loadData();
+    const optimisticReaction = {
+      message_id: messageId,
+      user_id: user.id,
+      emoji,
+    };
+    setData((current) => ({
+      ...current,
+      reactions: active
+        ? current.reactions.some(
+          (reaction) =>
+            reaction.message_id === messageId &&
+            reaction.user_id === user.id &&
+            reaction.emoji === emoji,
+        )
+          ? current.reactions
+          : [...current.reactions, optimisticReaction]
+        : current.reactions.filter(
+          (reaction) =>
+            !(
+              reaction.message_id === messageId &&
+              reaction.user_id === user.id &&
+              reaction.emoji === emoji
+            ),
+        ),
+    }));
+
+    try {
+      await setMessageReaction({ messageId, emoji, active });
+      await loadData();
+    } catch (error) {
+      // Restore the authoritative server state if the optimistic write fails.
+      await loadData().catch(() => {});
+      throw error;
+    }
   }
 
   async function handleReport(messageId, reason) {

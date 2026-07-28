@@ -3,6 +3,33 @@ import * as Dialog from '@radix-ui/react-dialog';
 import Avatar from './Avatar';
 import CallExperience from './CallExperience';
 
+function ReactionIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="12" r="7.5" />
+      <path d="M8.3 10h.01M13.7 10h.01M8.2 14.2c.8 1 1.7 1.5 2.8 1.5s2-.5 2.8-1.5M19 5v6M16 8h6" />
+    </svg>
+  );
+}
+
+function MoreIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="5" cy="12" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+    </svg>
+  );
+}
+
+function ReportIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3l7 3v5c0 4.6-2.7 7.8-7 10-4.3-2.2-7-5.4-7-10V6zM12 8v5M12 16h.01" />
+    </svg>
+  );
+}
+
 function ChatPanel({
   classroom,
   currentUser,
@@ -282,12 +309,70 @@ function ChatPanel({
                     {message.moderator && <span>Moderator</span>}
                     <time>{message.time}</time>
                   </p>
-                  <p className={
-                    message.mentionedCurrentUser
-                      ? 'message__bubble message__bubble--mentioned'
-                      : 'message__bubble'
-                  }>{message.text}</p>
-                  {onReact && (
+                  <div className="message__body">
+                    <p className={
+                      message.mentionedCurrentUser
+                        ? 'message__bubble message__bubble--mentioned'
+                        : 'message__bubble'
+                    }>{message.text}</p>
+                    {(onReact || (!isOwn && onReport)) && (
+                      <div className="message-action-bar" aria-label="Message actions">
+                        {onReact && (
+                          <details className="reaction-picker">
+                            <summary aria-label="Add reaction" title="Add reaction">
+                              <ReactionIcon />
+                            </summary>
+                            <div className="reaction-picker__menu" role="menu" aria-label="Choose a reaction">
+                              {['👍', '❤️', '😂', '😮', '😢', '👏'].map((emoji) => (
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  key={emoji}
+                                  onClick={(event) => {
+                                    event.currentTarget.closest('details').removeAttribute('open');
+                                    handleReaction(
+                                      message.id,
+                                      emoji,
+                                      !message.reactions.some(
+                                        (reaction) => reaction.emoji === emoji && reaction.mine,
+                                      ),
+                                    );
+                                  }}
+                                  aria-label={`React ${emoji}`}
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          </details>
+                        )}
+                        {!isOwn && onReport && (
+                          <details className="message-options">
+                            <summary aria-label="More message options" title="More options">
+                              <MoreIcon />
+                            </summary>
+                            <div className="message-options__menu" role="menu">
+                              <button
+                                type="button"
+                                role="menuitem"
+                                onClick={(event) => {
+                                  event.currentTarget.closest('details').removeAttribute('open');
+                                  handleReport(message.id);
+                                }}
+                              >
+                                <ReportIcon />
+                                <span>
+                                  <strong>Report message</strong>
+                                  <small>Send privately to moderators</small>
+                                </span>
+                              </button>
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {onReact && message.reactions.length > 0 && (
                     <div className="message-reactions" aria-label="Message reactions">
                       {message.reactions.map((reaction) => (
                         <button
@@ -304,40 +389,7 @@ function ChatPanel({
                           {reaction.emoji} {reaction.count}
                         </button>
                       ))}
-                      <details className="reaction-picker">
-                        <summary aria-label="Add reaction">☺</summary>
-                        <div>
-                          {['👍', '❤️', '😂', '😮', '😢', '👏'].map((emoji) => (
-                            <button
-                              type="button"
-                              key={emoji}
-                              onClick={(event) => {
-                                event.currentTarget.closest('details').removeAttribute('open');
-                                handleReaction(
-                                  message.id,
-                                  emoji,
-                                  !message.reactions.some(
-                                    (reaction) => reaction.emoji === emoji && reaction.mine,
-                                  ),
-                                );
-                              }}
-                              aria-label={`React ${emoji}`}
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
-                      </details>
                     </div>
-                  )}
-                  {!isOwn && onReport && (
-                    <button
-                      className="message__action"
-                      type="button"
-                      onClick={() => handleReport(message.id)}
-                    >
-                      Report
-                    </button>
                   )}
                 </div>
               </article>
