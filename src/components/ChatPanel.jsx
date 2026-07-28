@@ -54,6 +54,7 @@ function ChatPanel({
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
   const [sending, setSending] = useState(false);
+  const [openActionMenu, setOpenActionMenu] = useState(null);
   const typingTimerRef = useRef(null);
   const typingActiveRef = useRef(false);
   const mentionMatch = draft.match(/(?:^|\s)@([^@\s]*)$/);
@@ -66,6 +67,25 @@ function ChatPanel({
     : [];
 
   useEffect(() => () => window.clearTimeout(typingTimerRef.current), []);
+
+  useEffect(() => {
+    function closeOnOutsidePress(event) {
+      if (!event.target.closest('[data-message-action-root]')) {
+        setOpenActionMenu(null);
+      }
+    }
+
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') setOpenActionMenu(null);
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsidePress);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePress);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, []);
 
   function updateTyping(nextDraft) {
     if (!onTyping) return;
@@ -316,58 +336,88 @@ function ChatPanel({
                         : 'message__bubble'
                     }>{message.text}</p>
                     {(onReact || (!isOwn && onReport)) && (
-                      <div className="message-action-bar" aria-label="Message actions">
+                      <div
+                        className="message-action-bar"
+                        aria-label="Message actions"
+                        data-message-action-root
+                      >
                         {onReact && (
-                          <details className="reaction-picker">
-                            <summary aria-label="Add reaction" title="Add reaction">
+                          <div className="reaction-picker">
+                            <button
+                              className="message-action-trigger"
+                              type="button"
+                              aria-label="Add reaction"
+                              title="Add reaction"
+                              aria-expanded={openActionMenu === `${message.id}:reactions`}
+                              onClick={() => setOpenActionMenu((current) =>
+                                current === `${message.id}:reactions`
+                                  ? null
+                                  : `${message.id}:reactions`,
+                              )}
+                            >
                               <ReactionIcon />
-                            </summary>
-                            <div className="reaction-picker__menu" role="menu" aria-label="Choose a reaction">
-                              {['👍', '❤️', '😂', '😮', '😢', '👏'].map((emoji) => (
+                            </button>
+                            {openActionMenu === `${message.id}:reactions` && (
+                              <div className="reaction-picker__menu" role="menu" aria-label="Choose a reaction">
+                                {['👍', '❤️', '😂', '😮', '😢', '👏'].map((emoji) => (
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    key={emoji}
+                                    onClick={() => {
+                                      setOpenActionMenu(null);
+                                      handleReaction(
+                                        message.id,
+                                        emoji,
+                                        !message.reactions.some(
+                                          (reaction) => reaction.emoji === emoji && reaction.mine,
+                                        ),
+                                      );
+                                    }}
+                                    aria-label={`React ${emoji}`}
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {!isOwn && onReport && (
+                          <div className="message-options">
+                            <button
+                              className="message-action-trigger"
+                              type="button"
+                              aria-label="More message options"
+                              title="More options"
+                              aria-expanded={openActionMenu === `${message.id}:options`}
+                              onClick={() => setOpenActionMenu((current) =>
+                                current === `${message.id}:options`
+                                  ? null
+                                  : `${message.id}:options`,
+                              )}
+                            >
+                              <MoreIcon />
+                            </button>
+                            {openActionMenu === `${message.id}:options` && (
+                              <div className="message-options__menu" role="menu">
                                 <button
                                   type="button"
                                   role="menuitem"
-                                  key={emoji}
-                                  onClick={(event) => {
-                                    event.currentTarget.closest('details').removeAttribute('open');
-                                    handleReaction(
-                                      message.id,
-                                      emoji,
-                                      !message.reactions.some(
-                                        (reaction) => reaction.emoji === emoji && reaction.mine,
-                                      ),
-                                    );
+                                  onClick={() => {
+                                    setOpenActionMenu(null);
+                                    handleReport(message.id);
                                   }}
-                                  aria-label={`React ${emoji}`}
                                 >
-                                  {emoji}
+                                  <ReportIcon />
+                                  <span>
+                                    <strong>Report message</strong>
+                                    <small>Send privately to moderators</small>
+                                  </span>
                                 </button>
-                              ))}
-                            </div>
-                          </details>
-                        )}
-                        {!isOwn && onReport && (
-                          <details className="message-options">
-                            <summary aria-label="More message options" title="More options">
-                              <MoreIcon />
-                            </summary>
-                            <div className="message-options__menu" role="menu">
-                              <button
-                                type="button"
-                                role="menuitem"
-                                onClick={(event) => {
-                                  event.currentTarget.closest('details').removeAttribute('open');
-                                  handleReport(message.id);
-                                }}
-                              >
-                                <ReportIcon />
-                                <span>
-                                  <strong>Report message</strong>
-                                  <small>Send privately to moderators</small>
-                                </span>
-                              </button>
-                            </div>
-                          </details>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     )}

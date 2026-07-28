@@ -68,6 +68,11 @@ describe('message composer reliability', () => {
     const { rerender } = render(<ChatPanel {...props} messages={[message]} />);
 
     fireEvent.click(screen.getByLabelText('Add reaction'));
+    expect(screen.getByRole('menu', { name: 'Choose a reaction' })).toBeVisible();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('menu', { name: 'Choose a reaction' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Add reaction'));
     fireEvent.click(screen.getByRole('menuitem', { name: 'React 👍' }));
     expect(onReact).toHaveBeenCalledWith('message-1', '👍', true);
 
@@ -84,5 +89,7 @@ describe('message composer reliability', () => {
     expect(screen.getByLabelText('More message options')).toBeVisible();
     fireEvent.click(screen.getByLabelText('More message options'));
     expect(screen.getByRole('menuitem', { name: /report message/i })).toBeVisible();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('menuitem', { name: /report message/i })).not.toBeInTheDocument();
   });
 });

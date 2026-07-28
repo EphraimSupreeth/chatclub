@@ -1301,6 +1301,54 @@ html[data-theme='dark'] {
   background: color-mix(in srgb, var(--teen-panel) 94%, transparent);
 }
 
+.app-shell .conversation-list__context {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-panel);
+}
+
+.app-shell .conversation-list__context strong {
+  color: var(--teen-text);
+}
+
+.app-shell .conversation-list__context small {
+  color: var(--teen-muted);
+}
+
+.app-shell .conversation-card--updates {
+  border-color: var(--teen-line) !important;
+  background: color-mix(in srgb, var(--teen-purple-soft) 72%, var(--teen-card)) !important;
+}
+
+.app-shell .conversation-card--active {
+  border-color: var(--teen-purple);
+  background: var(--teen-purple-soft) !important;
+}
+
+.app-shell .moderation-note {
+  border-color: var(--teen-line);
+  color: color-mix(in srgb, #23644e 75%, var(--teen-text));
+  background: color-mix(in srgb, var(--teen-mint) 75%, var(--teen-card));
+}
+
+.app-shell .icon-button {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-card);
+}
+
+html[data-theme='dark'] .app-shell .moderation-note,
+html[data-theme='dark'] .app-shell .moderation-note strong {
+  color: #b9eadc;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'] .app-shell .moderation-note,
+  html[data-theme='system'] .app-shell .moderation-note strong {
+    color: #b9eadc;
+  }
+}
+
 .app-shell .message-header h2,
 .app-shell .conversation-list__header h1,
 .conversation-card strong,
@@ -4152,4 +4200,307 @@ html[data-theme='dark'] .profile-settings input[type='text'] {
   .notification-row time {
     grid-column: 2;
   }
+}
+
+/* Final interaction placement. Controls sit on the lower-left edge of every
+   bubble, popovers open upward, and controlled React state handles dismissal. */
+.app-shell .message__content {
+  padding-bottom: 0.85rem;
+}
+
+.app-shell .message-action-bar,
+.app-shell .message--own .message-action-bar {
+  top: auto;
+  right: auto;
+  bottom: -1.05rem;
+  left: 0.45rem;
+}
+
+.app-shell .message-action-bar:has(.message-action-trigger[aria-expanded='true']) {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.app-shell .message-action-trigger {
+  display: grid;
+  width: 2rem;
+  min-width: 2rem;
+  height: 2rem;
+  min-height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  color: #666179;
+  background: transparent;
+  cursor: pointer;
+}
+
+.app-shell .message-action-trigger:hover,
+.app-shell .message-action-trigger:focus-visible,
+.app-shell .message-action-trigger[aria-expanded='true'] {
+  color: #5548d5;
+  outline: 0;
+  background: #f0edff;
+}
+
+.app-shell .message-action-trigger svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-shell .message-options .message-action-trigger svg circle {
+  fill: currentColor;
+  stroke: none;
+}
+
+.app-shell .reaction-picker > .reaction-picker__menu,
+.app-shell .message--own .reaction-picker > .reaction-picker__menu {
+  right: auto;
+  bottom: calc(100% + 0.5rem);
+  left: -0.3rem;
+}
+
+.app-shell .message-options > .message-options__menu {
+  top: auto;
+  right: auto;
+  bottom: calc(100% + 0.5rem);
+  left: -2.25rem;
+}
+
+.app-shell .message-reactions {
+  margin-top: 0.65rem;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .app-shell .message__content {
+    padding-bottom: 0;
+  }
+
+  .app-shell .message-action-bar,
+  .app-shell .message--own .message-action-bar {
+    position: static;
+    justify-self: start;
+    margin-top: 0.25rem;
+  }
+
+  .app-shell .message--own .message-action-bar {
+    justify-self: end;
+  }
+}
+
+/* Unified app surfaces. Late legacy rules previously forced selected areas
+   back to white after the theme variables were applied. */
+.app-shell .message-panel,
+.app-shell .conversation-list,
+.content-panel,
+.more-panel,
+.people-panel,
+.calls-panel,
+.notifications-panel {
+  color: var(--teen-text);
+  background: var(--teen-panel);
+}
+
+.app-shell .message-header,
+.app-shell .composer {
+  border-color: var(--teen-line);
+  background: color-mix(in srgb, var(--teen-panel) 94%, transparent);
+}
+
+.app-shell .message-header h2,
+.app-shell .conversation-list__header h1,
+.app-shell .message__meta strong,
+.content-panel h1,
+.content-panel h2,
+.preference-card h2,
+.person-card h2,
+.call-history-row strong,
+.notification-row strong {
+  color: var(--teen-text);
+}
+
+.app-shell .message-header p,
+.app-shell .conversation-list__header p,
+.app-shell .message__meta,
+.app-shell .composer > small,
+.content-panel__intro,
+.empty-copy,
+.preference-card p,
+.preference-card small,
+.person-card p,
+.call-history-row small,
+.notification-row small,
+.notification-row time {
+  color: var(--teen-muted);
+}
+
+.app-shell .message__bubble,
+.conversation-card,
+.preference-card,
+.person-card,
+.call-history-row,
+.notification-row,
+.content-card,
+.update-post,
+.report-card,
+.moderation-section,
+.invite-security-card,
+.conversation-details,
+.dialog-content,
+.account-delete-dialog,
+.access-card {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-card);
+}
+
+.app-shell .message__bubble {
+  background: var(--teen-soft);
+}
+
+.app-shell .message--own .message__bubble {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(135deg, var(--community-purple), #526fe2);
+}
+
+.app-shell .composer__row input,
+.people-search input,
+.preference-card select,
+.profile-settings input[type='text'],
+.invite-policy-form input,
+.invite-policy-form select,
+.device-field select {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-soft);
+}
+
+.app-shell .composer__row input::placeholder,
+.people-search input::placeholder {
+  color: var(--teen-muted);
+}
+
+.app-shell .message-action-bar,
+.app-shell .reaction-picker > .reaction-picker__menu,
+.app-shell .message-options > .message-options__menu,
+.app-shell .reaction-chip,
+.mention-suggestions {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-card);
+}
+
+.app-shell .message-action-trigger {
+  color: var(--teen-muted);
+}
+
+.app-shell .message-action-trigger:hover,
+.app-shell .message-action-trigger:focus-visible,
+.app-shell .message-action-trigger[aria-expanded='true'],
+.app-shell .reaction-picker__menu button:hover,
+.app-shell .reaction-picker__menu button:focus-visible {
+  color: var(--teen-purple);
+  background: var(--teen-purple-soft);
+}
+
+.app-shell .message-options__menu small {
+  color: var(--teen-muted);
+}
+
+.app-shell .reaction-chip--mine {
+  border-color: var(--teen-purple);
+  background: var(--teen-purple-soft);
+}
+
+.app-shell .classroom-reminder {
+  border-color: color-mix(in srgb, #d9a83e 45%, var(--teen-line));
+  color: color-mix(in srgb, #8a671a 82%, var(--teen-text));
+  background: color-mix(in srgb, #fff1b8 72%, var(--teen-card));
+}
+
+html[data-theme='dark'] .app-shell .classroom-reminder {
+  color: #f1d88d;
+  background: #40361f;
+}
+
+html[data-theme='dark'] .app-shell .message-panel,
+html[data-theme='dark'] .app-shell .conversation-list,
+html[data-theme='dark'] .content-panel,
+html[data-theme='dark'] .more-panel,
+html[data-theme='dark'] .people-panel,
+html[data-theme='dark'] .calls-panel,
+html[data-theme='dark'] .notifications-panel {
+  background-image: none;
+}
+
+html[data-theme='dark'] .app-shell .message-header,
+html[data-theme='dark'] .app-shell .composer {
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html[data-theme='dark'] .app-shell .message-options__menu > button:hover,
+html[data-theme='dark'] .app-shell .message-options__menu > button:focus-visible {
+  background: #4a2938;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'] .app-shell .classroom-reminder {
+    color: #f1d88d;
+    background: #40361f;
+  }
+
+  html[data-theme='system'] .app-shell .message-panel,
+  html[data-theme='system'] .app-shell .conversation-list,
+  html[data-theme='system'] .content-panel,
+  html[data-theme='system'] .more-panel,
+  html[data-theme='system'] .people-panel,
+  html[data-theme='system'] .calls-panel,
+  html[data-theme='system'] .notifications-panel {
+    background-image: none;
+  }
+
+  html[data-theme='system'] .app-shell .message-header,
+  html[data-theme='system'] .app-shell .composer {
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Theme corrections must remain last because older milestone styles include
+   important light-mode conversation colors. */
+.app-shell .conversation-list__context {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-panel);
+}
+
+.app-shell .conversation-card--updates {
+  border-color: var(--teen-line) !important;
+  background: color-mix(in srgb, var(--teen-purple-soft) 72%, var(--teen-card)) !important;
+}
+
+.app-shell .conversation-card--active {
+  border-color: var(--teen-purple);
+  background: var(--teen-purple-soft) !important;
+}
+
+.app-shell .moderation-note {
+  border-color: var(--teen-line);
+  color: color-mix(in srgb, #23644e 75%, var(--teen-text));
+  background: color-mix(in srgb, var(--teen-mint) 75%, var(--teen-card));
+}
+
+.app-shell .icon-button {
+  border-color: var(--teen-line);
+  color: var(--teen-text);
+  background: var(--teen-card);
 }
