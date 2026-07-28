@@ -73,6 +73,40 @@ export async function listClassrooms() {
   );
 }
 
+export async function getPlatformAccess() {
+  return throwOnError(await requireClient().rpc('get_platform_access'));
+}
+
+export async function listPlatformModerators() {
+  return throwOnError(await requireClient().rpc('list_platform_moderators')) ?? [];
+}
+
+export async function grantPlatformModerator(email) {
+  return throwOnError(
+    await requireClient().rpc('grant_platform_moderator', {
+      target_email: email.trim(),
+    }),
+  );
+}
+
+export async function revokePlatformModerator(userId) {
+  return throwOnError(
+    await requireClient().rpc('revoke_platform_moderator', {
+      target_user_id: userId,
+    }),
+  );
+}
+
+export async function setClassroomModerator(classroomId, userId, enabled) {
+  return throwOnError(
+    await requireClient().rpc('set_classroom_moderator', {
+      target_classroom_id: classroomId,
+      target_user_id: userId,
+      enabled,
+    }),
+  );
+}
+
 export async function joinClassroom(code) {
   return throwOnError(
     await requireClient().rpc('join_classroom', { class_code: code.trim() }),
@@ -363,6 +397,38 @@ export async function removeClassroomMember(classroomId, userId) {
 export async function rotateClassroomInvite(classroomId) {
   return throwOnError(
     await requireClient().rpc('rotate_classroom_invite', {
+      target_classroom_id: classroomId,
+    }),
+  );
+}
+
+export async function createClassroomInvite({
+  classroomId,
+  lifetimeHours,
+  allowedUses,
+}) {
+  const data = throwOnError(
+    await requireClient().rpc('create_classroom_invite', {
+      target_classroom_id: classroomId,
+      lifetime_hours: lifetimeHours,
+      allowed_uses: allowedUses,
+    }),
+  );
+  return data?.[0];
+}
+
+export async function getClassroomInviteStatus(classroomId) {
+  const data = throwOnError(
+    await requireClient().rpc('get_classroom_invite_status', {
+      target_classroom_id: classroomId,
+    }),
+  );
+  return data?.[0] ?? null;
+}
+
+export async function revokeClassroomInvite(classroomId) {
+  return throwOnError(
+    await requireClient().rpc('revoke_classroom_invite', {
       target_classroom_id: classroomId,
     }),
   );

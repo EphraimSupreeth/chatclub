@@ -28,6 +28,34 @@ supabase/migrations/004_direct_realtime_and_calls.sql
 supabase/functions/livekit-token
 ```
 
+### Staff access and classroom enrollment
+
+Apply `008_secure_moderator_governance.sql` before enabling new classroom
+creation. Bootstrap the first super-admin using the SQL in the README, confirm
+the account has email confirmation and MFA enabled in Supabase Auth, and keep at
+least two separately controlled recovery administrators for production.
+
+Staff onboarding checklist:
+
+1. Verify the moderator's identity through a channel other than ChatClub.
+2. Confirm the account email in Supabase Authentication.
+3. Grant platform moderator access from **Staff access**.
+4. Assign only the classrooms required for the person's role.
+5. Review the assignment and enrollment-code policy at least once per term.
+
+Staff offboarding checklist:
+
+1. Assign a replacement to every classroom first.
+2. Revoke platform moderator access; the database demotes their classroom roles.
+3. Rotate active classroom enrollment codes.
+4. Revoke their Supabase sessions when access must end immediately.
+5. Review platform and classroom audit events.
+
+Class codes are enrollment credentials, not authentication credentials. Share
+them through an approved school channel, keep their lifetime and use count as
+small as practical, revoke them after enrollment, and never post them in public
+repositories or public chat.
+
 ## Calling service
 
 The `livekit-token` Edge Function is the authorization boundary for calls.

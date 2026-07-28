@@ -3,7 +3,9 @@ import {
   listModeratorData,
   removeClassroomMember,
   resolveReport,
-  rotateClassroomInvite,
+  createClassroomInvite,
+  getClassroomInviteStatus,
+  revokeClassroomInvite,
 } from '../services/chatclubApi';
 
 const actionLabels = {
@@ -17,10 +19,20 @@ function ModeratorPanel({ classroom, currentUserId, onClassroomChanged }) {
   const [data, setData] = useState({ reports: [], auditEvents: [] });
   const [status, setStatus] = useState('Loading moderation queue…');
   const [inviteCode, setInviteCode] = useState('');
+  const [inviteStatus, setInviteStatus] = useState(null);
+  const [invitePolicy, setInvitePolicy] = useState({
+    lifetimeHours: 168,
+    allowedUses: 40,
+  });
 
   async function loadData() {
     try {
-      setData(await listModeratorData(classroom.id));
+      const [moderatorData, currentInvite] = await Promise.all([
+        listModeratorData(classroom.id),
+        getClassroomInviteStatus(classroom.id),
+      ]);
+      setData(moderatorData);
+      setInviteStatus(currentInvite);
       setStatus('');
     } catch (error) {
       setStatus(error.message);
@@ -54,12 +66,29 @@ function ModeratorPanel({ classroom, currentUserId, onClassroomChanged }) {
     }
   }
 
-  async function rotateInvite() {
-    if (!window.confirm('Rotate the invitation code? The previous code will stop working.')) return;
+  async function issueInvite(event) {
+    event.preventDefault();
+    if (!window.confirm('Issue a new class code? Any previous code will stop working.')) return;
     try {
-      const code = await rotateClassroomInvite(classroom.id);
-      setInviteCode(code);
-      setStatus('Invitation code rotated. Copy it now; it will not be shown again.');
+      const invitation = await createClassroomInvite({
+        classroomId: classroom.id,
+        lifetimeHours: Number(invitePolicy.lifetimeHours),
+        allowedUses: Number(invitePolicy.allowedUses),
+      });
+      setInviteCode(invitation.invite_code);
+      setStatus('New class code issued. Copy it now; ChatClub stores only its hash.');
+      await loadData();
+    } catch (error) {
+      setStatus(error.message);
+    }
+  }
+
+  async function revokeInvite() {
+    if (!window.confirm('Revoke the active class code immediately?')) return;
+    try {
+      await revokeClassroomInvite(classroom.id);
+      setInviteCode('');
+      setStatus('Class code revoked. Students already enrolled keep their access.');
       await loadData();
     } catch (error) {
       setStatus(error.message);
@@ -115,13 +144,66 @@ function ModeratorPanel({ classroom, currentUserId, onClassroomChanged }) {
             <h2 id="membership-title">Membership</h2>
             <p>Remove access when a member leaves the class.</p>
           </div>
-          <button className="button button--secondary" type="button" onClick={rotateInvite}>
-            Rotate invitation code
-          </button>
         </div>
+        <div className="invite-security-card">
+          <div>
+            <strong>Active enrollment credential</strong>
+            {inviteStatus ? (
+              <p>
+                {inviteStatus.revoked || new Date(inviteStatus.expires_at) <= new Date()
+                  ? 'No active code'
+                  : `${inviteStatus.use_count} of ${inviteStatus.max_uses} uses · expires ${
+                    new Date(inviteStatus.expires_at).toLocaleString()
+                  }`}
+              </p>
+            ) : <p>No secure code has been issued yet.</p>}
+          </div>
+          {inviteStatus && !inviteStatus.revoked && (
+            <button className="button button--danger" type="button" onClick={revokeInvite}>
+              Revoke code
+            </button>
+          )}
+        </div>
+        <form className="invite-policy-form" onSubmit={issueInvite}>
+          <label>
+            Valid for
+            <select
+              value={invitePolicy.lifetimeHours}
+              onChange={(event) => setInvitePolicy((current) => ({
+                ...current,
+                lifetimeHours: event.target.value,
+              }))}
+            >
+              <option value="24">24 hours</option>
+              <option value="72">3 days</option>
+              <option value="168">7 days</option>
+              <option value="720">30 days</option>
+            </select>
+          </label>
+          <label>
+            Maximum students
+            <input
+              type="number"
+              min="1"
+              max="500"
+              value={invitePolicy.allowedUses}
+              onChange={(event) => setInvitePolicy((current) => ({
+                ...current,
+                allowedUses: event.target.value,
+              }))}
+              required
+            />
+          </label>
+          <button className="button button--secondary" type="submit">
+            Issue new class code
+          </button>
+        </form>
         {inviteCode && (
           <div className="invite-result">
-            <strong>{inviteCode}</strong>
+            <span>
+              <small>Shown once</small>
+              <strong>{inviteCode}</strong>
+            </span>
             <button type="button" onClick={() => navigator.clipboard.writeText(inviteCode)}>Copy</button>
           </div>
         )}

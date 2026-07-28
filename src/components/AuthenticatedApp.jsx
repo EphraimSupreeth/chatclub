@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { listClassrooms, signOut } from '../services/chatclubApi';
+import { getPlatformAccess, listClassrooms, signOut } from '../services/chatclubApi';
 import ClassroomAccess from './ClassroomAccess';
 import LiveClassroom from './LiveClassroom';
 
 function AuthenticatedApp({ user }) {
   const [memberships, setMemberships] = useState([]);
+  const [platformAccess, setPlatformAccess] = useState('student');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -12,7 +13,12 @@ function AuthenticatedApp({ user }) {
     setLoading(true);
     setError('');
     try {
-      setMemberships(await listClassrooms());
+      const [nextMemberships, nextAccess] = await Promise.all([
+        listClassrooms(),
+        getPlatformAccess(),
+      ]);
+      setMemberships(nextMemberships);
+      setPlatformAccess(nextAccess);
     } catch (loadError) {
       setError(loadError.message);
     } finally {
@@ -27,10 +33,23 @@ function AuthenticatedApp({ user }) {
   if (loading) return <main className="loading-page"><p>Loading your classrooms…</p></main>;
   if (error) return <main className="loading-page"><p>{error}</p><button className="button button--secondary" onClick={loadClassrooms}>Try again</button></main>;
   if (memberships.length === 0) {
-    return <ClassroomAccess onChanged={loadClassrooms} onSignOut={signOut} />;
+    return (
+      <ClassroomAccess
+        canCreate={['moderator', 'super_admin'].includes(platformAccess)}
+        isSuperAdmin={platformAccess === 'super_admin'}
+        onChanged={loadClassrooms}
+        onSignOut={signOut}
+      />
+    );
   }
 
-  return <LiveClassroom membership={memberships[0]} user={user} />;
+  return (
+    <LiveClassroom
+      membership={memberships[0]}
+      platformAccess={platformAccess}
+      user={user}
+    />
+  );
 }
 
 export default AuthenticatedApp;

@@ -9,6 +9,7 @@ function RailIcon({ name }) {
     people: 'M16 19v-1.5A3.5 3.5 0 0 0 12.5 14h-5A3.5 3.5 0 0 0 4 17.5V19 M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M17 7a2.5 2.5 0 0 1 0 5 M18 14a3 3 0 0 1 2 3v2',
     more: 'M6 12h.01 M12 12h.01 M18 12h.01',
     moderation: 'M12 3l7 3v5c0 4.7-2.8 8-7 10-4.2-2-7-5.3-7-10V6z M12 8v5 M12 16h.01',
+    administration: 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2 M18 5v4 M16 7h4',
   };
 
   return (
@@ -33,11 +34,15 @@ function ClassroomSidebar({
   onSelectView,
   onOpenProfile,
   notificationCount = 0,
+  isSuperAdmin = false,
 }) {
-  const navigation =
+  let navigation =
     currentUser.role === 'Moderator'
       ? [...baseNavigation, { id: 'moderation', label: 'Moderation' }]
       : baseNavigation;
+  if (isSuperAdmin) {
+    navigation = [...navigation, { id: 'administration', label: 'Staff access' }];
+  }
   return (
     <aside className="sidebar app-rail">
       <div className="app-rail__main">

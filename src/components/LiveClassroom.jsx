@@ -26,6 +26,7 @@ import CallsPanel from './CallsPanel';
 import PeoplePanel from './PeoplePanel';
 import MorePanel from './MorePanel';
 import NotificationsPanel from './NotificationsPanel';
+import PlatformAdminPanel from './PlatformAdminPanel';
 
 function toInitials(name = '') {
   return name
@@ -36,7 +37,7 @@ function toInitials(name = '') {
     .toUpperCase();
 }
 
-function LiveClassroom({ membership, user }) {
+function LiveClassroom({ membership, platformAccess = 'student', user }) {
   const [activeView, setActiveView] = useState('chat');
   const [activeConversationId, setActiveConversationId] = useState('class-chat');
   const [data, setData] = useState({
@@ -508,6 +509,7 @@ function LiveClassroom({ membership, user }) {
         onSelectView={setActiveView}
         onOpenProfile={() => setActiveView('profile')}
         notificationCount={notifications.length}
+        isSuperAdmin={platformAccess === 'super_admin'}
       />
       {activeView === 'chat' ? (
         <ChatPanel
@@ -598,6 +600,16 @@ function LiveClassroom({ membership, user }) {
           currentUserId={user.id}
           onClassroomChanged={loadData}
         />
+      ) : activeView === 'administration' && platformAccess === 'super_admin' ? (
+        <section className="content-panel">
+          <PlatformAdminPanel
+            classroomId={classroom.id}
+            classroomModeratorIds={data.members
+              .filter((member) => member.role === 'moderator')
+              .map((member) => member.user_id)}
+            onChanged={loadData}
+          />
+        </section>
       ) : (
         <CommunityPanel
           view={activeView}

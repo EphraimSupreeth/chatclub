@@ -2488,6 +2488,131 @@ html[data-theme='dark'] {
   letter-spacing: 0.08em;
 }
 
+.access-note {
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-top: 1rem;
+}
+
+.platform-admin {
+  margin: 0 auto;
+  max-width: 720px;
+  text-align: left;
+}
+
+.platform-admin > p {
+  color: var(--ink-muted);
+}
+
+.staff-access-list {
+  border-top: 1px solid var(--line);
+  margin-top: 1.25rem;
+}
+
+.staff-access-list > div {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.9rem 0;
+}
+
+.staff-access-list span {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.staff-access-list small {
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.staff-access-list button,
+.button--danger {
+  background: #fff;
+  border: 1px solid #c43b4d;
+  color: #a52235;
+}
+
+.staff-access-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.invite-security-card {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin: 1rem 0;
+  padding: 1rem;
+}
+
+.invite-security-card p {
+  color: var(--ink-muted);
+  margin-top: 0.25rem;
+}
+
+.invite-policy-form {
+  align-items: end;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) auto;
+  margin-bottom: 1rem;
+}
+
+.invite-policy-form label {
+  color: var(--ink-muted);
+  display: grid;
+  font-size: 0.8rem;
+  font-weight: 700;
+  gap: 0.35rem;
+}
+
+.invite-policy-form input,
+.invite-policy-form select {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  min-height: 42px;
+  padding: 0.55rem 0.7rem;
+}
+
+.invite-result span {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.invite-result small {
+  color: var(--ink-muted);
+}
+
+.invite-result strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .invite-policy-form {
+    grid-template-columns: 1fr;
+  }
+
+  .invite-security-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 .audit-list p {
   display: grid;
   gap: 0.15rem;

@@ -56,6 +56,8 @@ the real backend; calling is therefore not shown in the interface demo.
    [`supabase/migrations/006_privacy_and_light_social.sql`](supabase/migrations/006_privacy_and_light_social.sql).
    Then run
    [`supabase/migrations/007_personalization.sql`](supabase/migrations/007_personalization.sql).
+   Then run
+   [`supabase/migrations/008_secure_moderator_governance.sql`](supabase/migrations/008_secure_moderator_governance.sql).
 3. Copy `.env.example` to `.env.local`.
 4. Add the project URL and publishable/anonymous key:
 
@@ -67,7 +69,41 @@ the real backend; calling is therefore not shown in the interface demo.
 5. In Supabase Authentication settings, configure the local and production site
    URLs. Keep email confirmation enabled for a real deployment.
 6. Start the app and create the first classroom. The creator receives its
-   one-time invitation code and becomes its moderator.
+   one-time invitation code and becomes its classroom moderator. Classroom
+   creation is available only to platform moderators approved by a super-admin.
+
+## Secure moderator bootstrap
+
+Migration 008 removes self-appointed moderation. After applying it, bootstrap
+the first super-admin once from the Supabase SQL Editor. Replace the placeholder
+with the confirmed account that will own staff governance:
+
+```sql
+insert into private.platform_staff (user_id, role, granted_by)
+select id, 'super_admin', id
+from auth.users
+where lower(email) = lower('OWNER_EMAIL_HERE');
+```
+
+Verify that exactly one row was inserted. Do not expose `private.platform_staff`
+through the Data API and do not add staff roles to editable user metadata.
+
+The operating flow is:
+
+1. A prospective moderator creates and confirms a normal ChatClub account.
+2. A super-admin independently verifies the person and grants moderator access
+   using the in-app **Staff access** panel.
+3. The super-admin can assign that approved moderator to an existing classroom,
+   or the moderator can create a new classroom.
+4. The classroom moderator issues a time-limited, usage-limited student code.
+5. Students create normal accounts and use the code once to enroll. They always
+   join with the `student` role.
+
+Enrollment codes contain 128 bits of cryptographic randomness, are stored only
+as bcrypt hashes, expire after the chosen period, have a maximum-use count, and
+can be revoked immediately. Issuing a new code invalidates the previous one.
+Migration 008 invalidates legacy permanent codes; moderators must issue a new
+secure code after deployment.
 
 For GitHub Pages, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as
 repository Actions secrets. The deployment workflow injects them only while

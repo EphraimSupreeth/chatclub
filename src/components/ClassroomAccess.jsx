@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { createClassroom, joinClassroom } from '../services/chatclubApi';
+import PlatformAdminPanel from './PlatformAdminPanel';
 
-function ClassroomAccess({ onChanged, onSignOut }) {
+function ClassroomAccess({ canCreate = false, isSuperAdmin = false, onChanged, onSignOut }) {
   const [mode, setMode] = useState('join');
   const [form, setForm] = useState({ code: '', name: '', schoolName: '' });
   const [status, setStatus] = useState('');
@@ -59,11 +60,19 @@ function ClassroomAccess({ onChanged, onSignOut }) {
             {submitting ? 'Please wait…' : mode === 'join' ? 'Join classroom' : 'Create classroom'}
           </button>
         </form>
-        <button className="text-button" type="button" onClick={() => setMode(mode === 'join' ? 'create' : 'join')}>
-          {mode === 'join' ? 'Are you a teacher or class admin? Create a class' : 'Have a code? Join a class'}
-        </button>
+        {canCreate && (
+          <button className="text-button" type="button" onClick={() => setMode(mode === 'join' ? 'create' : 'join')}>
+            {mode === 'join' ? 'Create a classroom' : 'Have a code? Join a class'}
+          </button>
+        )}
+        {!canCreate && (
+          <p className="access-note">
+            Classroom creation is restricted to moderators approved by a super-admin.
+          </p>
+        )}
         <button className="text-button text-button--muted" type="button" onClick={onSignOut}>Sign out</button>
       </section>
+      {isSuperAdmin && <PlatformAdminPanel />}
     </main>
   );
 }
